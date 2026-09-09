@@ -27,7 +27,7 @@ namespace Infrastructure.Realtime.Events.Game
             if (@event is not EntityAppearanceChangedEvent changed)
                 return;
 
-            await publisher.SendPlayerAppearanceChanged(
+            await publisher.SendEntityAppearanceChanged(
                 changed.RoomSpatialID,
                 new EntityAppearanceChangedDTO()
                 {

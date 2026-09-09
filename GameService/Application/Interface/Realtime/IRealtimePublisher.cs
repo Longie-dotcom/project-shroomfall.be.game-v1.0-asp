@@ -1,9 +1,7 @@
 ﻿using Contract.DTO.Feature.Admin.Response;
 using Contract.DTO.Feature.Design.Response;
 using Contract.DTO.Feature.Game.Response;
-using Contract.DTO.Runtime.EntityDomain;
 using Contract.DTO.Runtime.EntityDomain.Component;
-using Contract.DTO.Runtime.WorldDomain;
 
 namespace Application.Interface.Realtime
 {
@@ -48,18 +46,11 @@ namespace Application.Interface.Realtime
             string entityId);
 
         // ─────────────────────────────
-        // Player Appearance (changed) 
+        // Appearance (changed) 
         // ─────────────────────────────
-        Task SendPlayerAppearanceChanged(
+        Task SendEntityAppearanceChanged(
             string roomSpatialId,
             EntityAppearanceChangedDTO appearanceChanged);
-
-        // ─────────────────────────────
-        // Room Snapshot (changed) 
-        // ─────────────────────────────
-        Task SendRoomSnapshotUpdated(
-            string roomId,
-            RoomSpatialDTO payload);
 
         // ─────────────────────────────
         // Definition Update Notification

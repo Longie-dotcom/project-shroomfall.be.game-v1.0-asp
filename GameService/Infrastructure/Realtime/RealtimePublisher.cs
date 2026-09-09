@@ -4,7 +4,6 @@ using Contract.DTO.Feature.Admin.Response;
 using Contract.DTO.Feature.Design.Response;
 using Contract.DTO.Feature.Game.Response;
 using Contract.DTO.Runtime.EntityDomain.Component;
-using Contract.DTO.Runtime.WorldDomain;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Infrastructure.Realtime
@@ -103,27 +102,15 @@ namespace Infrastructure.Realtime
         }
 
         // ─────────────────────────────
-        // Player Appearance Changed (broadcast to room)
+        // Appearance Changed
         // ─────────────────────────────
-        public Task SendPlayerAppearanceChanged(
+        public Task SendEntityAppearanceChanged(
             string roomId,
             EntityAppearanceChangedDTO appearanceChanged)
         {
             return gameHub.Clients
                 .Group(roomId)
-                .SendAsync(NetworkMethod.OnPlayerAppearanceChanged, appearanceChanged);
-        }
-
-        // ─────────────────────────────
-        // Room Snapshot (changed) 
-        // ─────────────────────────────
-        public Task SendRoomSnapshotUpdated(
-            string roomId,
-            RoomSpatialDTO payload)
-        {
-            return gameHub.Clients
-                .Group(roomId)
-                .SendAsync(NetworkMethod.OnRoomSnapshotUpdated, payload);
+                .SendAsync(NetworkMethod.OnEntityAppearanceChanged, appearanceChanged);
         }
 
         // ─────────────────────────────
