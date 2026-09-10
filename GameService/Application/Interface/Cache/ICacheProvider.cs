@@ -27,7 +27,6 @@ namespace Application.Interface.Cache
         IEffectCache Effect { get; }
         IItemCache Item { get; }
 
-        ICombatRunCache CombatRun { get; }
         IRoomCache Room { get; }
     }
 }

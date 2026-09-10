@@ -8,7 +8,6 @@ using Application.Feature.Game.Command;
 using Application.Feature.Game.Handler;
 using Contract.DTO.Feature.Connection.Response;
 using Contract.DTO.Feature.Design.Response;
-using Contract.DTO.Feature.Game.Response;
 using Contract.DTO.Runtime.WorldDomain;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -43,7 +42,6 @@ namespace Application.Configuration
 
             // GAME FEATURE
             services.AddScoped<IHandler<BackHomeCommand, SaveGameDTO>, BackHomeHandler>();
-            services.AddScoped<IHandler<CreateCombatRunCommand, CombatRunDTO>, CreateCombatRunHandler>();
             services.AddScoped<IHandler<EnterHubCommand, SaveGameDTO>, EnterHubHandler>();
             services.AddScoped<IHandler<MoveCommand>, MoveHandler>();
             services.AddScoped<IHandler<UpdateAppearanceCommand>, UpdateAppearanceHandler>();

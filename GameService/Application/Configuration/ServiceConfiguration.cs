@@ -5,8 +5,6 @@ using Application.Service.WorldService.Creation;
 using Application.Service.WorldService.Factory;
 using Application.Service.WorldService.Factory.Component;
 using Application.Service.WorldService.Persistence;
-using Application.Service.WorldService.Run;
-using Domain.Runtime.WorldDomain.Run;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Application.Configuration
@@ -52,9 +50,6 @@ namespace Application.Configuration
             services.AddScoped<EntityPersistence>();
             services.AddScoped<RoomPersistence>();
             services.AddScoped<SnapshotPersistence>();
-
-            services.AddSingleton<CombatRunService>();
-            services.AddSingleton<PartyService<CombatRunInstance, CombatRunParticipant>>();
 
             services.AddSingleton<BootstrapService>();
             services.AddSingleton<ResidencyService>();

@@ -65,7 +65,6 @@ namespace Application.Feature.Game.Handler
             var items = mapper.Map<List<ItemDefinitionDTO>>(cacheProvider.Item.GetAll());
             var entities = mapper.Map<List<EntityDefinitionDTO>>(cacheProvider.Entity.GetAll());
             var rooms = mapper.Map<List<RoomDefinitionDTO>>(allRooms);
-            var combatRuns = mapper.Map<List<CombatRunDefinitionDTO>>(cacheProvider.CombatRun.GetAll());
             var locales = mapper.Map<List<LocaleDTO>>(cacheProvider.Locale.GetAll());
 
             return new DefinitionSnapshotDTO
@@ -74,7 +73,6 @@ namespace Application.Feature.Game.Handler
                 Effects = effects,
                 Items = items,
                 Entities = entities,
-                CombatRuns = combatRuns,
                 Rooms = rooms,
                 Locales = locales
             };

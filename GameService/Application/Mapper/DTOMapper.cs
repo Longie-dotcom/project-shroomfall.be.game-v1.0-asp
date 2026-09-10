@@ -10,7 +10,6 @@ using Domain.Abstraction;
 using Domain.Runtime.EntityDomain;
 using Domain.Runtime.EntityDomain.Component;
 using Domain.Runtime.MetaDomain;
-using Domain.Runtime.WorldDomain.Run;
 using Domain.Runtime.WorldDomain.Spatial;
 
 namespace Application.Mapper
@@ -114,10 +113,6 @@ namespace Application.Mapper
             // ─────────────────────────────
             // World Domain
             // ─────────────────────────────
-            // Run
-            CreateMap<CombatRunInstance, CombatRunInstanceDTO>()
-                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.ID));
-
             // Room
             CreateMap<RoomSpatial, RoomSpatialDTO>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.ID));

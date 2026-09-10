@@ -1,5 +1,4 @@
-﻿using Application.Service.WorldService.Run;
-using Contract.Enum.MetaDomain.Effect;
+﻿using Contract.Enum.MetaDomain.Effect;
 using Domain.Runtime.EntityDomain;
 using Domain.Runtime.EntityDomain.Component;
 
@@ -15,17 +14,12 @@ namespace Application.Service.MetaService
     public class DeathService
     {
         #region Attributes
-        private readonly CombatRunService combatRunService;
         #endregion
 
         #region Properties
         #endregion
 
-        public DeathService(
-            CombatRunService combatRunService)
-        {
-            this.combatRunService = combatRunService;
-        }
+        public DeathService() { }
 
         #region Methods
         public DeathOutcome CheckDeath(
@@ -44,15 +38,11 @@ namespace Application.Service.MetaService
             {
                 return DeathOutcome.Entity;
             }
-
             // Case B: Player in an active combat run
-            if (combatRunService.HandlePlayerDeath(entity))
+            else
             {
                 return DeathOutcome.Player;
             }
-
-            // Case C: Non-player owned entity (summons, pets) or player outside a run
-            return DeathOutcome.None;
         }
         #endregion
     }

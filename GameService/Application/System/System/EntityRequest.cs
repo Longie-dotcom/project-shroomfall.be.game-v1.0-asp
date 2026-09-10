@@ -1,7 +1,6 @@
 ﻿using Application.Service.EntityService;
 using Application.Service.MetaService;
 using Application.Service.WorldService;
-using Application.Service.WorldService.Run;
 using Application.System.Queue;
 
 namespace Application.System.System
@@ -17,7 +16,6 @@ namespace Application.System.System
         private readonly ItemService itemService;
         private readonly CharacteristicService characteristicService;
         private readonly ResidencyService residencyService;
-        private readonly CombatRunService combatRunService;
         #endregion
 
         #region Properties
@@ -31,8 +29,7 @@ namespace Application.System.System
             LifetimeService lifetimeService,
             ItemService itemService,
             CharacteristicService characteristicService,
-            ResidencyService residencyService,
-            CombatRunService combatRunService)
+            ResidencyService residencyService)
         {
             this.effectService = effectService;
             this.aiService = aiService;
@@ -42,7 +39,6 @@ namespace Application.System.System
             this.itemService = itemService;
             this.characteristicService = characteristicService;
             this.residencyService = residencyService;
-            this.combatRunService = combatRunService;
         }
 
         #region Methods
@@ -58,8 +54,6 @@ namespace Application.System.System
             itemService.Tick(dt, commandBuffer);
             characteristicService.Tick(dt, commandBuffer);
             
-            combatRunService.Tick();
-
             await residencyService.Tick(dt);
         }
         #endregion

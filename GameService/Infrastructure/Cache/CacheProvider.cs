@@ -28,7 +28,6 @@ namespace Infrastructure.Cache
         private readonly ILocaleCache localeCache;
         private readonly IEffectCache effectCache;
         private readonly IItemCache itemCache;
-        private readonly ICombatRunCache combatRunCache;
         private readonly IRoomCache roomCache;
         #endregion
 
@@ -45,7 +44,6 @@ namespace Infrastructure.Cache
         public ILocaleCache Locale => localeCache;
         public IEffectCache Effect => effectCache;
         public IItemCache Item => itemCache;
-        public ICombatRunCache CombatRun => combatRunCache;
         public IRoomCache Room => roomCache;
         #endregion
 
@@ -64,7 +62,6 @@ namespace Infrastructure.Cache
             ILocaleCache localeCache,
             IEffectCache effectCache,
             IItemCache itemCache,
-            ICombatRunCache combatRunCache,
             IRoomCache roomCache)
         {
             this.telemetryQueue = telemetryQueue;
@@ -81,7 +78,6 @@ namespace Infrastructure.Cache
             this.localeCache = localeCache;
             this.effectCache = effectCache;
             this.itemCache = itemCache;
-            this.combatRunCache = combatRunCache;
             this.roomCache = roomCache;
         }
 
@@ -104,7 +100,6 @@ namespace Infrastructure.Cache
                 localeCache.Load(dto.Locales);
                 effectCache.Load(dto.Effects);
                 itemCache.Load(dto.Items);
-                combatRunCache.Load(dto.CombatRuns);
                 roomCache.Load(dto.Rooms, dto.Cells, dto.EntitySpawnRules);
 
                 telemetryQueue.EnqueueAlert(

@@ -2,7 +2,6 @@
 using Application.Feature.Connection.Command;
 using Application.Interface.Realtime.Managers;
 using Application.Service.WorldService;
-using Application.Service.WorldService.Run;
 using Domain.DomainException;
 using Domain.Runtime.EntityDomain.Component;
 using ResponseCode;
@@ -15,7 +14,6 @@ namespace Application.Feature.Connection.Handler
         private readonly ISessionManager sessionManager;
         private readonly RoomMigrationService roomMigrationService; 
         private readonly WorldContext worldContext;
-        private readonly CombatRunService combatRunService;
         #endregion
 
         #region Properties
@@ -24,13 +22,11 @@ namespace Application.Feature.Connection.Handler
         public UnloadSessionHandler(
             ISessionManager sessionManager,
             RoomMigrationService roomMigrationService,
-            WorldContext worldContext,
-            CombatRunService combatRunService)
+            WorldContext worldContext)
         {
             this.sessionManager = sessionManager;
             this.roomMigrationService = roomMigrationService;
             this.worldContext = worldContext;
-            this.combatRunService = combatRunService;
         }
 
         #region Methods
@@ -55,9 +51,6 @@ namespace Application.Feature.Connection.Handler
                 throw new InternalException(
                     ApplicationCode.ConnectionHandlerCode.UnloadSessionTransformMissing,
                     $"Player instance {playerInstanceId} is missing its TransformInstance component.");
-
-            // Remove the player from combat instance
-            combatRunService.HandlePlayerQuit(playerInstanceId);
 
             // Freeze engine loops and release residency
             await roomMigrationService.PlayerQuitGame(

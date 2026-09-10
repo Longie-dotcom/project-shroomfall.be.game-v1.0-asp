@@ -48,7 +48,6 @@ namespace Infrastructure.Configuration
             services.AddSingleton<IItemCache, ItemCache>();
 
             // WORLD CACHE
-            services.AddSingleton<ICombatRunCache, CombatRunCache>();
             services.AddSingleton<IRoomCache, RoomCache>();
 
             return services;
