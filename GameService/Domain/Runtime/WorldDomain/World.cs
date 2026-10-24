@@ -12,7 +12,7 @@ namespace Domain.Runtime.WorldDomain
     {
         #region Attributes
         private readonly Dictionary<string, EntityInstance> entities;
-        private readonly SpatialIndex spatialIndex;
+        private readonly Dictionary<string, RoomSpatial> rooms;
         #endregion
 
         #region Properties
@@ -21,7 +21,7 @@ namespace Domain.Runtime.WorldDomain
         public World()
         {
             entities = new Dictionary<string, EntityInstance>();
-            spatialIndex = new SpatialIndex();
+            rooms = new Dictionary<string, RoomSpatial>();
         }
 
         #region Query
@@ -43,24 +43,28 @@ namespace Domain.Runtime.WorldDomain
             string roomSpatialId,
             int x, int y, int z)
         {
-            return spatialIndex.Query(roomSpatialId, x, y, z);
+            return rooms.TryGetValue(roomSpatialId, out var roomSpatial)
+                ? (roomSpatial, roomSpatial.Query(x, y, z))
+                : (null, new List<EntityInstance>());
         }
 
         public IEnumerable<RoomSpatial> GetRooms()
         {
-            return spatialIndex.GetRooms();
+            return rooms.Values;
         }
 
         public RoomSpatial? GetRoom(
             string roomSpatialId)
         {
-            return spatialIndex.GetRoom(roomSpatialId);
+            return rooms.TryGetValue(roomSpatialId, out var roomSpatial)
+                ? roomSpatial
+                : null;
         }
 
         public RoomSpatial? GetRoomByOwner(
-            string ownerEntityInstanceId)
+            string ownerId)
         {
-            return spatialIndex.GetRoomByOwner(ownerEntityInstanceId);
+            return rooms.Values.FirstOrDefault(r => r.OwnerID == ownerId);
         }
         #endregion
 
@@ -75,7 +79,7 @@ namespace Domain.Runtime.WorldDomain
             entities[entityInstance.ID] = entityInstance;
 
             // Register in spatial index
-            spatialIndex.AddEntity(transform);
+            IndexEntity(transform);
         }
 
         public void RemoveEntity(
@@ -88,7 +92,7 @@ namespace Domain.Runtime.WorldDomain
             if (transform == null) return;
 
             // Remove from spatial first
-            spatialIndex.RemoveEntity(transform);
+            DeindexEntity(transform);
 
             // Remove entity from dictionary
             entities.Remove(entityInstanceId);
@@ -116,7 +120,7 @@ namespace Domain.Runtime.WorldDomain
             transform.SetPosition(newPosition, layerZ);
 
             // Spatial sync
-            spatialIndex.EntityMove(transform, oldKey);
+            IndexEntityMove(transform, oldKey);
         }
 
         public void ChangeRoom(
@@ -134,7 +138,7 @@ namespace Domain.Runtime.WorldDomain
             if (transform == null) return;
 
             // Remove from OLD room spatial index
-            spatialIndex.RemoveEntity(transform);
+            DeindexEntity(transform);
 
             // Mutate authoritative state
             transform.ChangeRoom(
@@ -143,19 +147,56 @@ namespace Domain.Runtime.WorldDomain
                 layerZ);
 
             // Register into NEW room spatial index
-            spatialIndex.AddEntity(transform);
+            IndexEntity(transform);
         }
 
         public void AddRoom(
             RoomSpatial roomSpatial)
         {
-            spatialIndex.AddRoom(roomSpatial);
+            rooms[roomSpatial.ID] = roomSpatial;
         }
 
         public void RemoveRoom(
             string roomSpatialId)
         {
-            spatialIndex.RemoveRoom(roomSpatialId);
+            rooms.Remove(roomSpatialId);
+        }
+
+        private void IndexEntity(
+            TransformInstance transform)
+        {
+            if (!rooms.TryGetValue(transform.RoomSpatialID, out var room))
+                throw new InternalException(
+                    DomainCode.WorldCode.RoomSpatialNotFoundOnEntityAdded,
+                    $"Room spatial not registered: {transform.RoomSpatialID}, when entity: {transform.Entity.ID} was added");
+
+            var key = transform.GetSpatialKey();
+            room.AddEntity(transform.Entity, key.cx, key.cy, key.x, key.y, key.z);
+        }
+
+        private void DeindexEntity(
+            TransformInstance transform)
+        {
+            if (!rooms.TryGetValue(transform.RoomSpatialID, out var room))
+                return;
+
+            var key = transform.GetSpatialKey();
+            room.RemoveEntity(transform.Entity, key.cx, key.cy, key.x, key.y, key.z);
+        }
+
+        private void IndexEntityMove(
+            TransformInstance transform,
+            (int cx, int cy, int x, int y, int z) oldKey)
+        {
+            if (!rooms.TryGetValue(transform.RoomSpatialID, out var room))
+                throw new InternalException(
+                    DomainCode.WorldCode.RoomSpatialNotFoundOnEntityMoved,
+                    $"Room spatial not registered: {transform.RoomSpatialID}, when entity: {transform.Entity.ID} moved");
+
+            var newKey = transform.GetSpatialKey();
+            if (oldKey == newKey) return;
+
+            room.EntityMove(transform.Entity, oldKey, newKey);
         }
         #endregion
     }

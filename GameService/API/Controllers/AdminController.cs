@@ -40,14 +40,14 @@ namespace API.Controllers
         }
 
         [Authorize(Roles = nameof(Role.Admin))]
-        [HttpGet("room-instance/{roomSpatailId}")]
+        [HttpGet("room-instance/{roomSpatialId}")]
         public async Task<IActionResult> GetRoomInstance(
-            string roomSpatailId)
+            string roomSpatialId)
         {
             var (userId, steamId, role) = ClaimReader.GetIdentity(User);
 
             var result = await dispatcher.Send<FetchRoomInstanceCommand, RoomInstanceDTO>(
-                new FetchRoomInstanceCommand(userId, roomSpatailId)
+                new FetchRoomInstanceCommand(userId, roomSpatialId)
             );
 
             return Ok(result);

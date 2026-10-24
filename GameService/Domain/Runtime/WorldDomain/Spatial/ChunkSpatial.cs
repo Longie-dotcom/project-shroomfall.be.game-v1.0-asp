@@ -15,7 +15,8 @@ namespace Domain.Runtime.WorldDomain.Spatial
             return ReferenceEquals(x, y);
         }
 
-        public int GetHashCode(EntityInstance obj)
+        public int GetHashCode(
+            EntityInstance obj)
         {
             return RuntimeHelpers.GetHashCode(obj);
         }
@@ -65,7 +66,8 @@ namespace Domain.Runtime.WorldDomain.Spatial
             }
         }
 
-        public IEnumerable<EntityInstance> Query(int x, int y)
+        public IEnumerable<EntityInstance> Query(
+            int x, int y)
         {
             var key = (x, y);
 
