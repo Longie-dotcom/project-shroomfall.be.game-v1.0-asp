@@ -56,6 +56,7 @@ namespace Application.System.Queue
     {
         #region Properties
         public string EntityInstanceID { get; } = string.Empty;
+        public string SourceInstanceID { get; } = string.Empty;
         public AttributeType Vital { get; }
         public float PreviousValue { get; }
         public float CurrentValue { get; }
@@ -63,11 +64,13 @@ namespace Application.System.Queue
     
         public VitalThresholdCommand(
             string entityInstanceId,
+            string sourceInstanceId,
             AttributeType vitals,
             float previousValue,
             float currentValue)
         {
             EntityInstanceID = entityInstanceId;
+            SourceInstanceID = sourceInstanceId;
             Vital = vitals;
             PreviousValue = previousValue;
             CurrentValue = currentValue;

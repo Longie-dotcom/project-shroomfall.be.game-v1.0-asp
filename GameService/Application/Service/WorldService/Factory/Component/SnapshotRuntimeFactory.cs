@@ -38,6 +38,8 @@ namespace Application.Service.WorldService.Factory.Component
                     CreateCollision(collision),
                 CharacteristicSnapshot characteristic =>
                     CreateCharacteristic(characteristic),
+                EconomicSnapshot economic =>
+                    CreateEconomic(economic),
                 EffectContainerSnapshot effectContainer => 
                     CreateEffectContainer(effectContainer),
                 InventorySnapshot inventory => 
@@ -48,6 +50,8 @@ namespace Application.Service.WorldService.Factory.Component
                     CreateOwnership(ownership),
                 ProjectileSnapshot projectile => 
                     CreateProjectile(projectile),
+                QuestProgressSnapshot questProgress =>
+                    CreateQuestProgress(questProgress),
                 TransformSnapshot transform => 
                     CreateTransform(transform),
                 TriggeredEffectSnapshot effectSnapshot =>
@@ -133,6 +137,12 @@ namespace Application.Service.WorldService.Factory.Component
             return instance;
         }
 
+        private EconomicInstance CreateEconomic(
+            EconomicSnapshot snapshot)
+        {
+            return new EconomicInstance(snapshot.CurrentMoney);
+        }
+
         private EffectContainerInstance CreateEffectContainer(
             EffectContainerSnapshot snapshot)
         {
@@ -206,6 +216,26 @@ namespace Application.Service.WorldService.Factory.Component
                 def.ID!.Value,
                 def.Velocity,
                 def.OnImpactSpawnEntityDefinitionID);
+        }
+
+        private QuestProgressInstance CreateQuestProgress(
+            QuestProgressSnapshot snapshot)
+        {
+            var entries = snapshot.Entries
+                .Select(entry => new QuestProgressEntry(
+                    entry.QuestInstanceId,
+                    entry.StartedAt,
+                    entry.Status,
+                    entry.IdentificationProgress is null
+                        ? null
+                        : new IdentificationProgress(
+                            entry.IdentificationProgress.CorrectDefeatCount,
+                            entry.IdentificationProgress.RequiredDefeatCount
+                        )
+                ))
+                .ToList();
+
+            return new QuestProgressInstance(entries);
         }
 
         private TransformInstance CreateTransform(

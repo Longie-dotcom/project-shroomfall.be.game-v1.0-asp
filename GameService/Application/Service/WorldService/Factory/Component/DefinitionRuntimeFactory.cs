@@ -188,6 +188,11 @@ namespace Application.Service.WorldService.Factory.Component
             return new ActionInstance();
         }
 
+        public EconomicInstance CreateEconomic()
+        {
+            return new EconomicInstance(Constraint.DEFAULT_ECONOMY);
+        }
+
         public EffectContainerInstance CreateEffectContainer()
         {
             return new EffectContainerInstance();
@@ -198,6 +203,11 @@ namespace Application.Service.WorldService.Factory.Component
             string personalRoomId)
         {
             return new OwnershipInstance(userId, personalRoomId);
+        }
+
+        public QuestProgressInstance CreateQuestProgress()
+        {
+            return new QuestProgressInstance(new List<QuestProgressEntry>());
         }
 
         public TransformInstance CreateTransform(

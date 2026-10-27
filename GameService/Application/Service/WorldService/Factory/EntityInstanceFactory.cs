@@ -189,7 +189,9 @@ namespace Application.Service.WorldService.Factory
             entity.AddComponent(definitionRuntimeFactory.CreateAppearance(entity.DefinitionID));
             entity.AddComponent(definitionRuntimeFactory.CreateAction());
             entity.AddComponent(definitionRuntimeFactory.CreateEffectContainer());
+            entity.AddComponent(definitionRuntimeFactory.CreateEconomic());
             entity.AddComponent(definitionRuntimeFactory.CreateOwnership(playerContext.UserID, playerContext.PersonalRoomID));
+            entity.AddComponent(definitionRuntimeFactory.CreateQuestProgress());
 
             // Initialize
             characteristicService.InitializeVitals(entity);

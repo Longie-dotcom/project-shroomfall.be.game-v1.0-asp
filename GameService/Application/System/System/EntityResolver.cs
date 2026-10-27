@@ -11,6 +11,7 @@ namespace Application.System.System
         private readonly WorldContext worldContext;
         private readonly CollisionService collisionService;
         private readonly DeathService deathService;
+        private readonly QuestService questService;
         #endregion
 
         #region Properties
@@ -19,11 +20,13 @@ namespace Application.System.System
         public EntityResolver(
             WorldContext worldContext,
             CollisionService collisionService,
-            DeathService deathService)
+            DeathService deathService,
+            QuestService questService)
         {
             this.worldContext = worldContext;
             this.collisionService = collisionService;
             this.deathService = deathService;
+            this.questService = questService;
         }
 
         #region Methods
@@ -111,6 +114,13 @@ namespace Application.System.System
                 cmd.Vital,
                 cmd.PreviousValue,
                 cmd.CurrentValue);
+
+            if (deathOutcome == DeathOutcome.Entity)
+            {
+                var source = worldContext.GetEntity(cmd.SourceInstanceID);
+                if (source != null)
+                    questService.HandleEntityDefeated(source, entity);
+            }
 
             commandBuffer.Results.Enqueue(new VitalThresholdResult(
                 cmd.EntityInstanceID,

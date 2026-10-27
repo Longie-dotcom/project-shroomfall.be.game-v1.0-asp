@@ -18,6 +18,7 @@ namespace Application.Service.EntityService
     public sealed class VitalChangedRecord
     {
         public required string EntityInstanceID { get; init; }
+        public required string SourceInstanceID { get; init; }
         public required AttributeType Vital { get; init; }
         public required float PreviousValue { get; init; }
         public required float CurrentValue { get; init; }
@@ -56,6 +57,7 @@ namespace Application.Service.EntityService
                 buffer.Commands.Enqueue(
                     new VitalThresholdCommand(
                         change.EntityInstanceID,
+                        change.SourceInstanceID,
                         change.Vital,
                         change.PreviousValue,
                         change.CurrentValue));

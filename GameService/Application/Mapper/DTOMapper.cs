@@ -47,11 +47,13 @@ namespace Application.Mapper
                 .Include<AppearanceInstance, AppearanceInstanceDTO>()
                 .Include<CollisionInstance, CollisionInstanceDTO>()
                 .Include<CharacteristicInstance, CharacteristicInstanceDTO>()
+                .Include<EconomicInstance, EconomicInstanceDTO>()
                 .Include<EffectContainerInstance, EffectContainerInstanceDTO>()
                 .Include<InventoryInstance, InventoryInstanceDTO>()
                 .Include<LifetimeInstance, LifetimeInstanceDTO>()
                 .Include<OwnershipInstance, OwnershipInstanceDTO>()
                 .Include<ProjectileInstance, ProjectileInstanceDTO>()
+                .Include<QuestProgressInstance, QuestProgressInstanceDTO>()
                 .Include<TransformInstance, TransformInstanceDTO>()
                 .Include<TriggeredEffectInstance, TriggeredEffectInstanceDTO>()
                 .Include<WorldItemPayloadInstance, WorldItemPayloadInstanceDTO>();
@@ -74,6 +76,9 @@ namespace Application.Mapper
                 .ForMember(dest => dest.Vitals, opt => opt.MapFrom(src => src.GetVitals().Select(kvp => new AttributeValueInstanceDTO { AttributeType = kvp.Key, Value = kvp.Value })));
 
             // Effect Container Instance
+            CreateMap<EconomicInstance, EconomicInstanceDTO>();
+
+            // Effect Container Instance
             CreateMap<EffectContainerInstance, EffectContainerInstanceDTO>();
 
             // Inventory Instance
@@ -87,6 +92,11 @@ namespace Application.Mapper
 
             // Projectile Instance
             CreateMap<ProjectileInstance, ProjectileInstanceDTO>();
+
+            // Projectile Instance
+            CreateMap<QuestProgressInstance, QuestProgressInstanceDTO>();
+            CreateMap<QuestProgressEntry, QuestProgressEntryDTO>();
+            CreateMap<IdentificationProgress, IdentificationProgressDTO>();
 
             // Transform Instance
             CreateMap<TransformInstance, TransformInstanceDTO>();

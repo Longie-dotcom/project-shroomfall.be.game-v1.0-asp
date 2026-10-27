@@ -166,7 +166,7 @@ namespace Application.System.System
                     break;
 
                 case DeathOutcome.Player:
-                    // publish the Run mode of that participant
+                    // TODO: Return the player to the their private room and lost their 80% money + 4 random items
                     break; 
 
                 case DeathOutcome.None:

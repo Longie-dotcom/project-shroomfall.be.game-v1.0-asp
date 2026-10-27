@@ -137,6 +137,7 @@ namespace Application.Service.MetaService
                         sourceChanged = new VitalChangedRecord
                         {
                             EntityInstanceID = source.ID,
+                            SourceInstanceID = target.ID,
                             Vital = AttributeType.Health,
                             PreviousValue = sourcePrevious,
                             CurrentValue = sourceCurrent,
@@ -150,6 +151,7 @@ namespace Application.Service.MetaService
                 new VitalChangedRecord
                 {
                     EntityInstanceID = target.ID,
+                    SourceInstanceID = source?.ID ?? string.Empty,
                     Vital = AttributeType.Health,
                     PreviousValue = previous,
                     CurrentValue = current,
@@ -162,6 +164,7 @@ namespace Application.Service.MetaService
             EffectContext effectContext)
         {
             var target = effectContext.Target;
+            var source = effectContext.Source;
             var effect = effectContext.Effect;
 
             var characteristic = target.GetComponent<CharacteristicInstance>();
@@ -182,6 +185,7 @@ namespace Application.Service.MetaService
                 new VitalChangedRecord
                 {
                     EntityInstanceID = target.ID,
+                    SourceInstanceID = source?.ID ?? string.Empty,
                     Vital = AttributeType.Health,
                     PreviousValue = previous,
                     CurrentValue = current,
@@ -196,6 +200,7 @@ namespace Application.Service.MetaService
             EffectContext effectContext)
         {
             var target = effectContext.Target;
+            var source = effectContext.Source;
             var effect = effectContext.Effect;
 
             var characteristic = target.GetComponent<CharacteristicInstance>();
@@ -216,6 +221,7 @@ namespace Application.Service.MetaService
                 new VitalChangedRecord
                 {
                     EntityInstanceID = target.ID,
+                    SourceInstanceID = source?.ID ?? string.Empty,
                     Vital = AttributeType.Energy,
                     PreviousValue = previous,
                     CurrentValue = current,
@@ -228,6 +234,7 @@ namespace Application.Service.MetaService
             EffectContext effectContext)
         {
             var target = effectContext.Target;
+            var source = effectContext.Source;
             var effect = effectContext.Effect;
 
             var characteristic = target.GetComponent<CharacteristicInstance>();
@@ -248,6 +255,7 @@ namespace Application.Service.MetaService
                 new VitalChangedRecord
                 {
                     EntityInstanceID = target.ID,
+                    SourceInstanceID = source?.ID ?? string.Empty,
                     Vital = AttributeType.Energy,
                     PreviousValue = previous,
                     CurrentValue = current,

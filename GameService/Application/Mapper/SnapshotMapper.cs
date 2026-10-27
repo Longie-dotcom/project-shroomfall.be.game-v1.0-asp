@@ -48,11 +48,13 @@ namespace Application.Mapper
                 .Include<AppearanceInstance, AppearanceSnapshot>()
                 .Include<CollisionInstance, CollisionSnapshot>()
                 .Include<CharacteristicInstance, CharacteristicSnapshot>()
+                .Include<EconomicInstance, EconomicSnapshot>()
                 .Include<EffectContainerInstance, EffectContainerSnapshot>()
                 .Include<InventoryInstance, InventorySnapshot>()
                 .Include<LifetimeInstance, LifetimeSnapshot>()
                 .Include<OwnershipInstance, OwnershipSnapshot>()
                 .Include<ProjectileInstance, ProjectileSnapshot>()
+                .Include<QuestProgressInstance, QuestProgressSnapshot>()
                 .Include<TransformInstance, TransformSnapshot>()
                 .Include<TriggeredEffectInstance, TriggeredEffectSnapshot>()
                 .Include<WorldItemPayloadInstance, WorldItemPayloadSnapshot>();
@@ -73,6 +75,9 @@ namespace Application.Mapper
             CreateMap<CharacteristicInstance, CharacteristicSnapshot>()
                 .ForMember(dest => dest.Vitals, opt => opt.MapFrom(src => new Dictionary<AttributeType, float>(src.GetVitals())));
 
+            // Lifetime Snapshot
+            CreateMap<EconomicInstance, EconomicSnapshot>();
+
             // Effect Container Snapshot
             CreateMap<EffectContainerInstance, EffectContainerSnapshot>();
 
@@ -87,6 +92,11 @@ namespace Application.Mapper
 
             // Projectile Snapshot
             CreateMap<ProjectileInstance, ProjectileSnapshot>();
+
+            // Transform Snapshot
+            CreateMap<QuestProgressInstance, QuestProgressSnapshot>();
+            CreateMap<QuestProgressEntry, QuestProgressEntrySnapshot>();
+            CreateMap<IdentificationProgress, IdentificationProgressSnapshot>();
 
             // Transform Snapshot
             CreateMap<TransformInstance, TransformSnapshot>();

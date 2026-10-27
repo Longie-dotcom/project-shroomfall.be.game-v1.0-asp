@@ -35,7 +35,9 @@ namespace Application.Configuration
             // META SERVICE
             services.AddSingleton<DeathService>();
             services.AddSingleton<EffectService>();
+            services.AddSingleton<GachaService>();
             services.AddSingleton<ItemService>();
+            services.AddSingleton<QuestService>();
             services.AddSingleton<VitalService>();
 
             // WORLD SERVICE

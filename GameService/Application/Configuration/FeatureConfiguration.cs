@@ -6,8 +6,12 @@ using Application.Feature.Connection.Command;
 using Application.Feature.Connection.Handler;
 using Application.Feature.Game.Command;
 using Application.Feature.Game.Handler;
+using Application.Feature.Quest.Command;
+using Application.Feature.Quest.Handler;
+using Contract.DTO.Abstraction;
 using Contract.DTO.Feature.Connection.Response;
 using Contract.DTO.Feature.Design.Response;
+using Contract.DTO.Runtime.MetaDomain;
 using Contract.DTO.Runtime.WorldDomain;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -47,6 +51,13 @@ namespace Application.Configuration
             services.AddScoped<IHandler<UpdateAppearanceCommand>, UpdateAppearanceHandler>();
             services.AddScoped<IHandler<UseItemCommand>, UseItemHandler>();
             services.AddScoped<IHandler<UserRefreshCommand, DefinitionSnapshotDTO?>, UserRefreshHandler>();
+
+            // QUEST FEATURE
+            services.AddScoped<IHandler<AcceptQuestCommand, QuestInstanceDTO>, AcceptQuestHandler>();
+            services.AddScoped<IHandler<CreateQuestCommand>, CreateQuestHandler>();
+            services.AddScoped<IHandler<GachaRewardCommand>, GachaRewardHandler>();
+            services.AddScoped<IHandler<QueryQuestsCommand, PagedResponseDTO<QuestInstanceDTO>>, QueryQuestsHandler>();
+            services.AddScoped<IHandler<SubmitQuestResultCommand>, SubmitQuestResultHandler>();
 
             return services;
         }
