@@ -33,7 +33,7 @@ namespace API.Controllers
         public async Task<IActionResult> QueryQuests(
             [FromQuery] QuestInstanceQueryDTO dto)
         {
-            var (userId, _, _) = ClaimReader.GetIdentity(User);
+            var (userId, googleId, role) = ClaimReader.GetIdentity(User);
 
             var result = await dispatcher.Send<QueryQuestsCommand, PagedResponseDTO<QuestInstanceDTO>>(
                 new QueryQuestsCommand(userId, dto)
@@ -47,7 +47,7 @@ namespace API.Controllers
         public async Task<ActionResult<QuestInstanceDTO>> AcceptQuest(
             [FromBody] string questInstanceId)
         {
-            var (userId, _, _) = ClaimReader.GetIdentity(User);
+            var (userId, googleId, role) = ClaimReader.GetIdentity(User);
 
             var result = await dispatcher.Send<AcceptQuestCommand, QuestInstanceDTO>(
                 new AcceptQuestCommand(userId, questInstanceId)
@@ -61,7 +61,7 @@ namespace API.Controllers
         public async Task<IActionResult> CreateQuest(
             [FromBody] QuestInstanceDTO dto)
         {
-            var (userId, _, _) = ClaimReader.GetIdentity(User);
+            var (userId, googleId, role) = ClaimReader.GetIdentity(User);
 
             await dispatcher.Send<CreateQuestCommand>(
                 new CreateQuestCommand(userId, dto)
@@ -75,7 +75,7 @@ namespace API.Controllers
         public async Task<IActionResult> SubmitQuestResult(
             [FromBody] SubmitQuestResultDTO dto)
         {
-            var (userId, _, _) = ClaimReader.GetIdentity(User);
+            var (userId, googleId, role) = ClaimReader.GetIdentity(User);
 
             await dispatcher.Send<SubmitQuestResultCommand>(
                 new SubmitQuestResultCommand(userId, dto)
@@ -89,7 +89,7 @@ namespace API.Controllers
         public async Task<IActionResult> GachaReward(
             [FromBody] string questInstanceId)
         {
-            var (userId, _, _) = ClaimReader.GetIdentity(User);
+            var (userId, googleId, role) = ClaimReader.GetIdentity(User);
 
             await dispatcher.Send<GachaRewardCommand>(
                 new GachaRewardCommand(userId, questInstanceId)

@@ -30,7 +30,7 @@ namespace API.Controllers
         [HttpGet("room-spatials")]
         public async Task<IActionResult> GetRoomSpatials()
         {
-            var (userId, steamId, role) = ClaimReader.GetIdentity(User);
+            var (userId, googleId, role) = ClaimReader.GetIdentity(User);
 
             var result = await dispatcher.Send<FetchRoomSpatialsCommand, List<RoomSpatialDTO>>(
                 new FetchRoomSpatialsCommand(userId)
@@ -44,7 +44,7 @@ namespace API.Controllers
         public async Task<IActionResult> GetRoomInstance(
             string roomSpatialId)
         {
-            var (userId, steamId, role) = ClaimReader.GetIdentity(User);
+            var (userId, googleId, role) = ClaimReader.GetIdentity(User);
 
             var result = await dispatcher.Send<FetchRoomInstanceCommand, RoomInstanceDTO>(
                 new FetchRoomInstanceCommand(userId, roomSpatialId)

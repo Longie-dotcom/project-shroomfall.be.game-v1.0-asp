@@ -32,7 +32,7 @@ namespace API.Controllers
         [HttpPost("back-home")]
         public async Task<IActionResult> BackHome()
         {
-            var (userId, _, _) = ClaimReader.GetIdentity(User);
+            var (userId, googleId, role) = ClaimReader.GetIdentity(User);
 
             var snapshot = await dispatcher.Send<BackHomeCommand, SaveGameDTO>(
                 new BackHomeCommand(userId)
@@ -46,7 +46,7 @@ namespace API.Controllers
         public async Task<IActionResult> EnterHub(
             [FromRoute] string hubRoomSpatialId)
         {
-            var (userId, _, _) = ClaimReader.GetIdentity(User);
+            var (userId, googleId, role) = ClaimReader.GetIdentity(User);
 
             var snapshot = await dispatcher.Send<EnterHubCommand, SaveGameDTO>(
                 new EnterHubCommand(userId, hubRoomSpatialId)
@@ -60,7 +60,7 @@ namespace API.Controllers
         public async Task<IActionResult> UpdateAppearance(
             [FromBody] UpdatePlayerAppearanceDTO dto)
         {
-            var (userId, steamId, role) = ClaimReader.GetIdentity(User);
+            var (userId, googleId, role) = ClaimReader.GetIdentity(User);
 
             await dispatcher.Send<UpdateAppearanceCommand>(
                 new UpdateAppearanceCommand(userId, dto)
@@ -74,7 +74,7 @@ namespace API.Controllers
         public async Task<IActionResult> UseItem(
             [FromBody] UseItemDTO dto)
         {
-            var (userId, steamId, role) = ClaimReader.GetIdentity(User);
+            var (userId, googleId, role) = ClaimReader.GetIdentity(User);
 
             await dispatcher.Send<UseItemCommand>(
                 new UseItemCommand(userId, dto)
@@ -88,7 +88,7 @@ namespace API.Controllers
         public async Task<ActionResult<DefinitionSnapshotDTO?>> UserRefresh(
             string version)
         {
-            var (userId, steamId, role) = ClaimReader.GetIdentity(User);
+            var (userId, googleId, role) = ClaimReader.GetIdentity(User);
 
             var result = await dispatcher.Send<UserRefreshCommand, DefinitionSnapshotDTO?>(
                 new UserRefreshCommand(userId, new UserRefreshDTO { DefinitionVersion = version })

@@ -8,7 +8,7 @@ namespace API.Helper
     {
         #region Methods
 
-        public static (string UserId, string? SteamId, string? Role) GetIdentity(
+        public static (string UserId, string? GoogleId, string? Role) GetIdentity(
             ClaimsPrincipal user)
         {
             var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -18,10 +18,10 @@ namespace API.Helper
                     APICode.ClaimReaderCode.ClaimMissingUserId,
                     "User has no user ID in token");
 
-            var steamId = user.FindFirst("steamId")?.Value;
+            var googleId = user.FindFirst("googleId")?.Value;
             var role = user.FindFirst(ClaimTypes.Role)?.Value;
 
-            return (userId, steamId, role);
+            return (userId, googleId, role);
         }
 
         public static string? GetRole(
