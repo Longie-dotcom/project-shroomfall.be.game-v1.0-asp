@@ -1,3 +1,4 @@
+
 name: Build & Deploy (Railway)
 
 on:
@@ -9,24 +10,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    outputs:
-      reset_db: ${{ steps.check_migrations.outputs.reset_db }}
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 2
           submodules: recursive
-
-      - name: Detect migration changes
-        id: check_migrations
-        run: |
-          if git diff --name-only HEAD~1 HEAD | grep -q "GameService/Infrastructure/Migrations"; then
-            echo "reset_db=true" >> $GITHUB_OUTPUT
-          else
-            echo "reset_db=false" >> $GITHUB_OUTPUT
-          fi
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -51,7 +40,6 @@ jobs:
       - name: Push Docker image
         run: docker push longdong123/shroomfall-gamems:latest
 
-
   deploy:
     needs: build
     runs-on: ubuntu-latest
@@ -63,25 +51,7 @@ jobs:
       - name: Install Railway CLI
         run: npm install -g @railway/cli
 
-      # 1. WIPE PATH: Set variable to true (triggers deploy), then immediately turn it off for the future
-      - name: Redeploy Game Service with DB Wipe
-        if: ${{ needs.build.outputs.reset_db == 'true' }}
-        run: |
-          # This saves WIPE_DB=true and instantly triggers the wipe deployment
-          railway variables set WIPE_DB=true --service gamems-api.railway.internal
-          
-          # Wait 15 seconds to ensure Railway snapshots the "true" variable for the active deployment...
-          sleep 15
-            
-          # ...then safely flip it back to "false" so future crashes or normal deploys don't wipe the DB!
-          railway variables set WIPE_DB=false --service gamems-api.railway.internal --skip-deploys
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-
-        # 2. NORMAL PATH: Only runs if a database reset was NOT requested
-      - name: Redeploy Game Service (Normal)
-        if: ${{ needs.build.outputs.reset_db != 'true' }}
+      - name: Redeploy Game Service
         run: railway redeploy --service gamems-api.railway.internal --yes
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-
