@@ -1,11 +1,12 @@
 ﻿using Application.Interface.Utility;
+using System.Collections.Concurrent;
 
 namespace Infrastructure.Utility
 {
     public class TelemetryQueue : ITelemetryQueue
     {
         #region Attributes
-        private readonly Queue<TelemetryEvent> queue = new();
+        private readonly ConcurrentQueue<TelemetryEvent> queue = new();
         #endregion
 
         #region Properties
