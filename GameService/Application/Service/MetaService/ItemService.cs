@@ -93,6 +93,10 @@ namespace Application.Service.MetaService
                     continue;
                 }
 
+                // 0. Item can only be used when entity still have energy
+                if (characteristic.GetVital(AttributeType.Energy) <= 0)
+                    continue;
+
                 // 1. Update active cooldown timers on the instance
                 if (actionState.ActiveCooldowns.Count > 0)
                 {
