@@ -11,9 +11,14 @@ namespace Domain.Runtime.EntityDomain.Component
 
         #region Properties
         public ICollisionShape CollisionShape { get; }
+        public CollisionShapeType ShapeType { get; }
         public Vector2 CollisionOffset { get; }
         public CollisionLayer Layer { get; private set; }
         public CollisionLayer Mask { get; private set; }
+        public float Width { get; }
+        public float Height { get; }
+        public float Radius { get; }
+        public bool IsBlocking { get; }
         #endregion
 
         public CollisionInstance(
@@ -27,6 +32,26 @@ namespace Domain.Runtime.EntityDomain.Component
             CollisionOffset = collisionOffset;
             Layer = layer;
             Mask = mask;
+
+            IsBlocking = collisionShape.IsBlocking;
+
+            switch (collisionShape)
+            {
+                case PointShape:
+                    ShapeType = CollisionShapeType.Point;
+                    break;
+
+                case BoxShape box:
+                    ShapeType = CollisionShapeType.Box;
+                    Width = box.Width;
+                    Height = box.Height;
+                    break;
+
+                case CircleShape circle:
+                    ShapeType = CollisionShapeType.Circle;
+                    Radius = circle.Radius;
+                    break;
+            }
         }
 
         #region Methods
@@ -122,7 +147,7 @@ namespace Domain.Runtime.EntityDomain.Component
 
         #region Methods
         public int ComputeCells(
-            Vector2 position, 
+            Vector2 position,
             Span<(int x, int y)> output)
         {
             int count = 0;
@@ -232,7 +257,7 @@ namespace Domain.Runtime.EntityDomain.Component
 
         #region Methods
         public int ComputeCells(
-            Vector2 position, 
+            Vector2 position,
             Span<(int x, int y)> output)
         {
             int count = 0;
