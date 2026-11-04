@@ -48,6 +48,7 @@ namespace Application.Service.MetaService
         private readonly EntitySpawnService entitySpawnService;
         private readonly EffectService effectService;
         private readonly InventoryService inventoryService;
+        private readonly CharacteristicService characteristicService;
         #endregion
 
         #region Properties
@@ -58,13 +59,15 @@ namespace Application.Service.MetaService
             ICacheProvider cacheProvider,
             EntitySpawnService entitySpawnService,
             EffectService effectService,
-            InventoryService inventoryService)
+            InventoryService inventoryService,
+            CharacteristicService characteristicService)
         {
             this.worldContext = worldContext;
             this.cacheProvider = cacheProvider;
             this.entitySpawnService = entitySpawnService;
             this.effectService = effectService;
             this.inventoryService = inventoryService;
+            this.characteristicService = characteristicService;
         }
 
         #region Methods
@@ -169,6 +172,9 @@ namespace Application.Service.MetaService
             // Material is for crafting and trading only!
             if (action.ItemDef.Category == ItemCategory.Material)
                 return;
+
+            // Deduct energy
+            characteristicService.ConsumeItemUsageEnergy(entity, Constraint.ITEM_ENERGY_USAGE_CONSUME);
 
             switch (action.Type)
             {

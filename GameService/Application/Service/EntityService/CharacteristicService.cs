@@ -258,6 +258,39 @@ namespace Application.Service.EntityService
             return (attribute, attribute.BaseValue + growth.GrowthValue);
         }
 
+        public void ConsumeItemUsageEnergy(
+            EntityInstance entity,
+            float amount)
+        {
+            if (amount <= 0f)
+                return;
+
+            var characteristic = entity.GetComponent<CharacteristicInstance>();
+            if (characteristic == null)
+                return;
+
+            var transform = entity.GetComponent<TransformInstance>();
+            if (transform == null)
+                return;
+
+            float currentValue = characteristic.GetVital(AttributeType.Energy);
+            float newValue = MathF.Max(0f, currentValue - amount);
+            if (newValue == currentValue)
+                return;
+
+            characteristic.SetVital(AttributeType.Energy, newValue);
+
+            PublishVitalChange(new VitalChangedRecord
+            {
+                EntityInstanceID = entity.ID,
+                SourceInstanceID = string.Empty,
+                Vital = AttributeType.Energy,
+                PreviousValue = currentValue,
+                CurrentValue = newValue,
+                Reason = VitalChangeReason.EnergyConsume
+            }, transform);
+        }
+
         private void PublishVitalChange(
             VitalChangedRecord? record,
             TransformInstance transform)
