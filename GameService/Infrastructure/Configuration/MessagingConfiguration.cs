@@ -1,5 +1,4 @@
-﻿using Contract.DTO.Messaging;
-using Domain.DomainException;
+﻿using Domain.DomainException;
 using Infrastructure.Messaging.Consumer;
 using MassTransit;
 using Microsoft.Extensions.DependencyInjection;
@@ -41,6 +40,7 @@ namespace Infrastructure.Configuration
             services.AddMassTransit(configurator =>
             {
                 // CONSUMER
+                configurator.AddConsumer<DefinitionCacheConsumer>();
                 configurator.AddConsumer<GameStartupConsumer>();
 
                 configurator.UsingRabbitMq((context, cfg) =>

@@ -1,5 +1,4 @@
-﻿using Application.Interface.Realtime.Events;
-using Contract.Enum.MetaDomain.Effect;
+﻿using Contract.Enum.MetaDomain.Effect;
 
 namespace Application.Interface.Realtime.Events.Game
 {
