@@ -2,7 +2,6 @@
 using Application.Feature.Game.Command;
 using Application.Interface.Cache;
 using AutoMapper;
-using Contract.DTO.Definition.EntityDomain.Component;
 using Contract.DTO.Feature.Design.Response;
 
 namespace Application.Feature.Game.Handler
@@ -54,70 +53,21 @@ namespace Application.Feature.Game.Handler
             return BuildDefinitionSnapshot(1);
         }
 
-        public DefinitionSnapshotDTO BuildDefinitionSnapshot(long version)
+        public DefinitionSnapshotDTO BuildDefinitionSnapshot(
+            long version)
         {
             var entities = cacheProvider.Entity.GetAll().ToList();
-            var characteristics = cacheProvider.Characteristic.GetAll().ToList();
+            var characteristics = cacheProvider.Characteristic.GetAll();
 
-            Console.WriteLine("========== CHARACTERISTIC DEBUG ==========");
-            Console.WriteLine($"Total entities: {entities.Count}");
-            Console.WriteLine($"Total characteristics: {characteristics.Count}");
-
-            // 1. Inspect characteristic cache.
-            foreach (var characteristic in characteristics)
-            {
-                Console.WriteLine(
-                    $"[CACHE] ID: {characteristic.ID}, " +
-                    $"Entity: {characteristic.EntityDefinitionID}");
-
-                Console.WriteLine(
-                    $"[CACHE] AttributeValues: {characteristic.AttributeValues?.Count ?? 0}");
-
-                if (characteristic.AttributeValues != null)
-                {
-                    foreach (var attribute in characteristic.AttributeValues)
-                    {
-                        Console.WriteLine(
-                            $"    Type: {attribute.Type}, " +
-                            $"Value: {attribute.BaseValue}, " +
-                            $"Max: {attribute.Max}");
-                    }
-                }
-            }
-
-            // 2. Attach characteristics to their corresponding entities.
+            // Attach characteristics to their corresponding entities.
             foreach (var entity in entities)
             {
-                Console.WriteLine($"[ENTITY] Attaching components to: {entity.Id}");
+                var characteristic = characteristics
+                    .FirstOrDefault(x => x.EntityDefinitionID == entity.Id);
 
-                var characteristic = characteristics.FirstOrDefault(
-                    x => x.EntityDefinitionID == entity.Id);
-
-                if (characteristic == null)
-                {
-                    Console.WriteLine($"[WARNING] No characteristic found for {entity.Id}");
-                    continue;
-                }
-
-                Console.WriteLine(
-                    $"[ATTACH] {entity.Id} -> {characteristic.AttributeValues?.Count ?? 0} attributes");
-
-                entity.Components.Add(characteristic);
+                if (characteristic != null)
+                    entity.Components.Add(characteristic);
             }
-
-            // 3. Inspect final entity components.
-            foreach (var entity in entities)
-            {
-                foreach (var characteristic in entity.Components
-                             .OfType<CharacteristicDefinitionDTO>())
-                {
-                    Console.WriteLine(
-                        $"[FINAL] Entity: {entity.Id}, " +
-                        $"Characteristic attributes: {characteristic.AttributeValues?.Count ?? 0}");
-                }
-            }
-
-            Console.WriteLine("========== END CHARACTERISTIC DEBUG ==========");
 
             return new DefinitionSnapshotDTO
             {
