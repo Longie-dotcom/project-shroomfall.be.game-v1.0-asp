@@ -60,13 +60,8 @@ namespace Application.Feature.Game.Handler
         public DefinitionSnapshotDTO BuildDefinitionSnapshot(
             long version)
         {
-            var allRooms = cacheProvider.Room.GetAll();
-            var effects = mapper.Map<List<EffectDefinitionDTO>>(cacheProvider.Effect.GetAll());
-            var items = mapper.Map<List<ItemDefinitionDTO>>(cacheProvider.Item.GetAll());
-            var entities = mapper.Map<List<EntityDefinitionDTO>>(cacheProvider.Entity.GetAll());
-            var rooms = mapper.Map<List<RoomDefinitionDTO>>(allRooms);
-            var locales = mapper.Map<List<LocaleDTO>>(cacheProvider.Locale.GetAll());
-            var characteristics = mapper.Map<List<CharacteristicDefinitionDTO>>(cacheProvider.Characteristic.GetAll());
+            var entities = cacheProvider.Entity.GetAll().ToList();
+            var characteristics = cacheProvider.Characteristic.GetAll();
 
             // Attach characteristics to their corresponding entities.
             foreach (var entity in entities)
@@ -81,11 +76,11 @@ namespace Application.Feature.Game.Handler
             return new DefinitionSnapshotDTO
             {
                 Version = version,
-                Effects = effects,
-                Items = items,
+                Effects = cacheProvider.Effect.GetAll().ToList(),
+                Items = cacheProvider.Item.GetAll().ToList(),
                 Entities = entities,
-                Rooms = rooms,
-                Locales = locales
+                Rooms = cacheProvider.Room.GetAll().ToList(),
+                Locales = cacheProvider.Locale.GetAll().ToList()
             };
         }
         #endregion
