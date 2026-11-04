@@ -79,7 +79,7 @@ namespace Application.Feature.Game.Handler
                     {
                         Console.WriteLine(
                             $"    Type: {attribute.Type}, " +
-                            $"Value: {attribute.Value}, " +
+                            $"Value: {attribute.BaseValue}, " +
                             $"Max: {attribute.Max}");
                     }
                 }
