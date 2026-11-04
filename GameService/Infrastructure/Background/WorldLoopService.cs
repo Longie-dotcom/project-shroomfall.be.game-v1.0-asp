@@ -63,62 +63,75 @@ namespace Infrastructure.Background
 
                     // Systems
                     await entityRequest.Tick(Constraint.DELTA_TIME, commandBuffer);
-                    entityResolver.Resolve(commandBuffer);
-                    entityTrigger.Apply(commandBuffer);
-
-                    // Drain events
-                    var events = eventBus.Drain();
-
-                    // Publish realtime
-                    foreach (var e in events)
-                    {
-                        await dispatcher.Dispatch(e);
-                    }
+                    entityResolver.Resolve(commandBuffer, ReportException);
+                    entityTrigger.Apply(commandBuffer, ReportException);
                 }
                 catch (Exception ex)
                 {
-                    switch (ex)
+                    ReportException(ex);
+                }
+
+                // Drain events outside the systems try, so one failing entity never mutes every room
+                var events = eventBus.Drain();
+
+                // Publish realtime
+                foreach (var e in events)
+                {
+                    try
                     {
-                        case BadRequest badRequest:
-                            telemetryQueue.EnqueueAlert(
-                                badRequest.Code,
-                                badRequest.Message,
-                                TelemetrySeverity.Error);
-                            break;
-
-                        case NotFound notFound:
-                            telemetryQueue.EnqueueAlert(
-                                notFound.Code,
-                                notFound.Message,
-                                TelemetrySeverity.Error);
-                            break;
-
-                        case Unauthorized unauthorized:
-                            telemetryQueue.EnqueueAlert(
-                                unauthorized.Code,
-                                unauthorized.Message,
-                                TelemetrySeverity.Error);
-                            break;
-
-                        case InternalException internalException:
-                            telemetryQueue.EnqueueAlert(
-                                internalException.Code,
-                                internalException.Message,
-                                TelemetrySeverity.Fatal);
-                            break;
-
-                        default:
-                            telemetryQueue.EnqueueAlert(
-                                InfrastructureCode.WorldLoopServiceCode.UnhandleException,
-                                ex.Message,
-                                TelemetrySeverity.Fatal);
-
-                            Console.WriteLine(ex.ToString());
-                            break;
-                        }
+                        await dispatcher.Dispatch(e);
+                    }
+                    catch (Exception ex)
+                    {
+                        ReportException(ex);
                     }
                 }
             }
+        }
+
+        private void ReportException(
+            Exception ex)
+        {
+            switch (ex)
+            {
+                case BadRequest badRequest:
+                    telemetryQueue.EnqueueAlert(
+                        badRequest.Code,
+                        badRequest.Message,
+                        TelemetrySeverity.Error);
+                    break;
+
+                case NotFound notFound:
+                    telemetryQueue.EnqueueAlert(
+                        notFound.Code,
+                        notFound.Message,
+                        TelemetrySeverity.Error);
+                    break;
+
+                case Unauthorized unauthorized:
+                    telemetryQueue.EnqueueAlert(
+                        unauthorized.Code,
+                        unauthorized.Message,
+                        TelemetrySeverity.Error);
+                    break;
+
+                case InternalException internalException:
+                    telemetryQueue.EnqueueAlert(
+                        internalException.Code,
+                        internalException.Message,
+                        TelemetrySeverity.Fatal);
+                    break;
+
+                default:
+                    telemetryQueue.EnqueueAlert(
+                        InfrastructureCode.WorldLoopServiceCode.UnhandleException,
+                        ex.Message,
+                        TelemetrySeverity.Fatal);
+
+                    Console.WriteLine(ex.ToString());
+                    break;
+            }
+        }
         #endregion
     }
 }

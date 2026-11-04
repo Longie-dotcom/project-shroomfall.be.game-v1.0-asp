@@ -87,7 +87,7 @@ namespace Application.Service.MetaService
                 if (!actionState.CanUseItems)
                 {
                     actionState.ClearItemUseIntent();
-                    return;
+                    continue;
                 }
 
                 // 1. Update active cooldown timers on the instance

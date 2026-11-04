@@ -42,31 +42,40 @@ namespace Application.System.System
 
         #region Methods
         public void Apply(
-            CommandBuffer commandBuffer)
+            CommandBuffer commandBuffer,
+            Action<Exception> onError)
         {
             while (commandBuffer.Results.TryDequeue(out var result))
             {
-                switch (result)
+                // One failing result must not block the rest of the queue
+                try
                 {
-                    case MovementResult movementRes:
-                        ApplyMovement(movementRes, commandBuffer);
-                        break;
+                    switch (result)
+                    {
+                        case MovementResult movementRes:
+                            ApplyMovement(movementRes, commandBuffer);
+                            break;
 
-                    case ItemActionResult itemActionRes:
-                        ApplyItemAction(itemActionRes);
-                        break;
+                        case ItemActionResult itemActionRes:
+                            ApplyItemAction(itemActionRes);
+                            break;
 
-                    case EntityExpiredResult entityExpiredRes:
-                        ApplyEntityExpired(entityExpiredRes, commandBuffer);
-                        break;
+                        case EntityExpiredResult entityExpiredRes:
+                            ApplyEntityExpired(entityExpiredRes, commandBuffer);
+                            break;
 
-                    case VitalThresholdResult vitalThresholdRes:
-                        ApplyVitalThreshold(vitalThresholdRes, commandBuffer);
-                        break;
+                        case VitalThresholdResult vitalThresholdRes:
+                            ApplyVitalThreshold(vitalThresholdRes, commandBuffer);
+                            break;
 
-                    case EntityDespawnResult entityDespawnRes:
-                        ApplyEntityDespawn(entityDespawnRes);
-                        break;
+                        case EntityDespawnResult entityDespawnRes:
+                            ApplyEntityDespawn(entityDespawnRes);
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    onError(ex);
                 }
             }
         }
@@ -106,17 +115,18 @@ namespace Application.System.System
             {
                 triggeredEffectService.OnEntityTouched(touched, entity);
 
-                if (projectileService.TryHandleImpact(entity))
-                {
-                    commandBuffer.Commands.Enqueue(
-                        new EntityDespawnCommand(entity.ID, false));
-                }
-
                 if (inventoryService.TryPickItem(entity, touched))
                 {
-                    commandBuffer.Commands.Enqueue(
-                        new EntityDespawnCommand(touched.ID, false));
+                    commandBuffer.Commands.Enqueue(new EntityDespawnCommand(touched.ID, false));
                 }
+            }
+
+            // Impact once per projectile; despawn queued first so a failed impact spawn can't keep it alive
+            if (result.TriggeredEntities.Count > 0 && entity.GetComponent<ProjectileInstance>() != null)
+            {
+                commandBuffer.Commands.Enqueue(new EntityDespawnCommand(entity.ID, false));
+
+                projectileService.TryHandleImpact(entity);
             }
         }
 
@@ -149,10 +159,11 @@ namespace Application.System.System
             if (entity == null) 
                 return;
 
+            // Despawn first so a failed impact spawn can't keep it alive
+            commandBuffer.Commands.Enqueue(new EntityDespawnCommand(entity.ID, false));
+
             // Apply projectile logic
             projectileService.TryHandleImpact(entity);
-
-            commandBuffer.Commands.Enqueue(new EntityDespawnCommand(entity.ID, false));
         }
 
         private void ApplyVitalThreshold(

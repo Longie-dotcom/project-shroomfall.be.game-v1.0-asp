@@ -5,7 +5,6 @@ namespace Infrastructure.Realtime.Events
     public class EventBus : IEventBus
     {
         #region Attributes
-        private List<IEvent> current = new(1024);
         private List<IEvent> next = new(1024);
         private readonly object _lock = new();
         #endregion
@@ -29,9 +28,9 @@ namespace Infrastructure.Realtime.Events
         {
             lock (_lock)
             {
-                var result = current;
+                // Hand out this tick's events directly (no one-tick delay)
+                var result = next;
 
-                current = next;
                 next = new List<IEvent>(1024);
 
                 return result;

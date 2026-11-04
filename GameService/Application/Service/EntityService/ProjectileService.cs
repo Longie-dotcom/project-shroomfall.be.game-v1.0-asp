@@ -55,13 +55,16 @@ namespace Application.Service.EntityService
                 return false;
 
             if (!string.IsNullOrEmpty(projectile.OnImpactSpawnEntityDefinitionID))
+                // Projectile context so the factory accepts projectile children; other types only read the base fields
                 entitySpawnService.Spawn(
-                    new WorldEntityCreateContext(
+                    new ProjectileEntityCreateContext(
                         Guid.NewGuid().ToString(),
                         projectile.OnImpactSpawnEntityDefinitionID,
                         transform.RoomSpatialID,
                         transform.LayerZ,
-                        transform.Position));
+                        transform.Position,
+                        projectile.Direction,
+                        entity.GetComponent<TriggeredEffectInstance>()?.SourceEntityID ?? entity.ID));
 
             return true;
         }

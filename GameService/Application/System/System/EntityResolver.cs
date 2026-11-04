@@ -31,31 +31,40 @@ namespace Application.System.System
 
         #region Methods
         public void Resolve(
-            CommandBuffer commandBuffer)
+            CommandBuffer commandBuffer,
+            Action<Exception> onError)
         {
             while (commandBuffer.Commands.TryDequeue(out var command))
             {
-                switch (command)
+                // One failing command must not block the rest of the queue
+                try
                 {
-                    case MovementCommand moveCmd:
-                        ResolveMovement(moveCmd, commandBuffer);
-                        break;
+                    switch (command)
+                    {
+                        case MovementCommand moveCmd:
+                            ResolveMovement(moveCmd, commandBuffer);
+                            break;
 
-                    case ItemActionCommand itemCmd:
-                        ResolveItemAction(itemCmd, commandBuffer);
-                        break;
+                        case ItemActionCommand itemCmd:
+                            ResolveItemAction(itemCmd, commandBuffer);
+                            break;
 
-                    case EntityExpiredCommand entityExpiredCmd:
-                        ResolveEntityExpired(entityExpiredCmd, commandBuffer);
-                        break;
+                        case EntityExpiredCommand entityExpiredCmd:
+                            ResolveEntityExpired(entityExpiredCmd, commandBuffer);
+                            break;
 
-                    case VitalThresholdCommand vitalThresholdCmd:
-                        ResolveVitalThreshold(vitalThresholdCmd, commandBuffer);
-                        break;
+                        case VitalThresholdCommand vitalThresholdCmd:
+                            ResolveVitalThreshold(vitalThresholdCmd, commandBuffer);
+                            break;
 
-                    case EntityDespawnCommand entityDespawnCmd:
-                        ResolveEntityDespawn(entityDespawnCmd, commandBuffer);
-                        break;
+                        case EntityDespawnCommand entityDespawnCmd:
+                            ResolveEntityDespawn(entityDespawnCmd, commandBuffer);
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    onError(ex);
                 }
             }
         }
