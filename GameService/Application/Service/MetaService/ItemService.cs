@@ -93,10 +93,6 @@ namespace Application.Service.MetaService
                     continue;
                 }
 
-                // 0. Item can only be used when entity still have energy
-                if (characteristic.GetVital(AttributeType.Energy) <= 0)
-                    continue;
-
                 // 1. Update active cooldown timers on the instance
                 if (actionState.ActiveCooldowns.Count > 0)
                 {
@@ -173,33 +169,26 @@ namespace Application.Service.MetaService
             EntityInstance entity,
             ItemUsageActionContext action)
         {
-            // Material is for crafting and trading only!
             if (action.ItemDef.Category == ItemCategory.Material)
                 return;
-
-            // Deduct energy
-            characteristicService.ConsumeItemUsageEnergy(entity, Constraint.ITEM_ENERGY_USAGE_CONSUME);
 
             switch (action.Type)
             {
                 case ItemUsageAction.Unequip:
-                    ExecuteUnequip(
-                        entity,
-                        action.Slot!.Value);
+                    ExecuteUnequip(entity, action.Slot!.Value);
                     break;
 
                 case ItemUsageAction.Use:
-                    ExecuteManifestation(
-                        entity,
-                        action.Item,
-                        action.ItemDef,
-                        action.TargetVector!);
+                    bool requiresEnergy = RequiresEnergy(action.ItemDef.Category);
+                    if (requiresEnergy && !HasEnoughEnergy(entity))
+                        return;
 
-                    DeductCost(
-                        entity,
-                        action.Item,
-                        action.ItemDef);
+                    ExecuteManifestation(entity, action.Item, action.ItemDef, action.TargetVector!);
 
+                    if (requiresEnergy)
+                        characteristicService.ConsumeItemUsageEnergy(entity, Constraint.ITEM_ENERGY_USAGE_CONSUME);
+
+                    DeductCost(entity, action.Item, action.ItemDef);
                     break;
             }
         }
@@ -495,6 +484,22 @@ namespace Application.Service.MetaService
                     });
                 }
             }
+        }
+
+        private bool RequiresEnergy(
+            ItemCategory category)
+        {
+            return category == ItemCategory.Melee || category == ItemCategory.Ranged;
+        }
+
+        private bool HasEnoughEnergy(
+            EntityInstance entity)
+        {
+            var characteristic = entity.GetComponent<CharacteristicInstance>();
+            if (characteristic == null)
+                return false;
+
+            return characteristic.GetVital(AttributeType.Energy) >= Constraint.ITEM_ENERGY_USAGE_CONSUME;
         }
         #endregion
     }
