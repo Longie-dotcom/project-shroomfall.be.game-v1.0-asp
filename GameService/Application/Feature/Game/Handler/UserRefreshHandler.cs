@@ -66,6 +66,17 @@ namespace Application.Feature.Game.Handler
             var entities = mapper.Map<List<EntityDefinitionDTO>>(cacheProvider.Entity.GetAll());
             var rooms = mapper.Map<List<RoomDefinitionDTO>>(allRooms);
             var locales = mapper.Map<List<LocaleDTO>>(cacheProvider.Locale.GetAll());
+            var characteristics = mapper.Map<List<CharacteristicDefinitionDTO>>(cacheProvider.Characteristic.GetAll());
+
+            // Attach characteristics to their corresponding entities.
+            foreach (var entity in entities)
+            {
+                var characteristic = characteristics
+                    .FirstOrDefault(x => x.EntityDefinitionID == entity.Id);
+
+                if (characteristic != null)
+                    entity.Components.Add(characteristic);
+            }
 
             return new DefinitionSnapshotDTO
             {
