@@ -1,6 +1,7 @@
 ﻿using Application.Feature.Abstraction;
 using Application.Feature.Game.Command;
 using Application.Interface.Cache;
+using Application.Interface.GrpcClient;
 using AutoMapper;
 using Contract.DTO.Feature.Design.Response;
 
@@ -9,7 +10,7 @@ namespace Application.Feature.Game.Handler
     public class UserRefreshHandler : IHandler<UserRefreshCommand, DefinitionSnapshotDTO?>
     {
         #region Attributes
-        //private readonly IRelationalUoW relationalUoW;
+        private readonly IVersionGrpcClient versionGrpcClient;
         private readonly IMapper mapper;
         private readonly ICacheProvider cacheProvider;
         #endregion
@@ -18,11 +19,11 @@ namespace Application.Feature.Game.Handler
         #endregion
 
         public UserRefreshHandler(
-            //IRelationalUoW relationalUoW,
+            IVersionGrpcClient versionGrpcClient,
             IMapper mapper,
             ICacheProvider cacheProvider)
         {
-            //this.relationalUoW = relationalUoW;
+            this.versionGrpcClient = versionGrpcClient;
             this.mapper = mapper;
             this.cacheProvider = cacheProvider;
         }
@@ -31,26 +32,21 @@ namespace Application.Feature.Game.Handler
         public async Task<DefinitionSnapshotDTO?> Handle(
             UserRefreshCommand command)
         {
-            // TODO: USING GRPC TO GET LATEST VERSION
-
             var dto = command.DTO;
 
-            // Resolve repository
-            //var definitionVersionLogRepo = relationalUoW.GetRepository<IDefinitionVersionLogRepository>();
-
             // Get latest global definition version
-            //var latest = await definitionVersionLogRepo.GetLatest(Constraint.GLOBAL_DEFINITION_VERSION);
+            var current = await versionGrpcClient.RequestVersioningAsync();
 
             // No definition yet
-            //if (latest == null)
-            //    return null;
+            if (current == 0)
+                return null;
 
             // Client already latest
-            //if (dto.DefinitionVersion == latest.Version.ToString())
-            //    return null;
+            if (long.TryParse(dto.DefinitionVersion, out long clientVersion) && clientVersion == current)
+                return null;
 
             // Return full snapshot
-            return BuildDefinitionSnapshot(1);
+            return BuildDefinitionSnapshot(current);
         }
 
         public DefinitionSnapshotDTO BuildDefinitionSnapshot(

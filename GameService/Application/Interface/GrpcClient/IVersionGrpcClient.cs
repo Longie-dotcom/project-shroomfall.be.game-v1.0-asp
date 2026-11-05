@@ -1,8 +1,8 @@
 ﻿namespace Application.Interface.GrpcClient
 {
-    public interface IManagementGrpcClient
+    public interface IVersionGrpcClient
     {
-        Task RequestGameStartupAsync(
+        Task<long> RequestVersioningAsync(
             CancellationToken cancellationToken = default);
     }
 }

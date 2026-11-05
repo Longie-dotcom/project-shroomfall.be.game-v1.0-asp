@@ -148,13 +148,13 @@ namespace API
 
                     using (var scope = app.Services.CreateScope())
                     {
-                        var managementGrpcClient = scope.ServiceProvider.GetRequiredService<IManagementGrpcClient>();
+                        var definitionGrpcClient = scope.ServiceProvider.GetRequiredService<IDefinitionGrpcClient>();
                         var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
                         logger.LogInformation("Requesting caching definition/meta data...");
                         try
                         {
-                            await managementGrpcClient.RequestGameStartupAsync();
+                            await definitionGrpcClient.RequestGameStartupAsync();
                             logger.LogInformation("Requesting completed.");
                         }
                         catch (Exception ex)

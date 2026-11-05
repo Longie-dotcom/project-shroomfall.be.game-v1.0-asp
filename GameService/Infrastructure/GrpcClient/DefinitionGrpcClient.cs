@@ -3,7 +3,7 @@ using Contract.Grpc.Management;
 
 namespace Infrastructure.GrpcClient
 {
-    public class ManagementGrpcClient : IManagementGrpcClient
+    public class DefinitionGrpcClient : IDefinitionGrpcClient
     {
         #region Attributes
         private readonly DefinitionService.DefinitionServiceClient client;
@@ -12,7 +12,7 @@ namespace Infrastructure.GrpcClient
         #region Properties
         #endregion
 
-        public ManagementGrpcClient(
+        public DefinitionGrpcClient(
             DefinitionService.DefinitionServiceClient client)
         {
             this.client = client;

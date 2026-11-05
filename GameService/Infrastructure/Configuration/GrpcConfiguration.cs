@@ -1,5 +1,6 @@
 ﻿using Application.Interface.GrpcClient;
 using Contract.Grpc.Management;
+using Contract.Grpc.Version;
 using Domain.DomainException;
 using Infrastructure.GrpcClient;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,9 +29,12 @@ namespace Infrastructure.Configuration
 
             services.AddGrpcClient<DefinitionService.DefinitionServiceClient>(
                 options => { options.Address = new Uri(managementGrpcUrl); });
+            services.AddGrpcClient<VersionService.VersionServiceClient>(
+                options => { options.Address = new Uri(managementGrpcUrl); });
 
             // CLIENT
-            services.AddScoped<IManagementGrpcClient, ManagementGrpcClient>();
+            services.AddScoped<IDefinitionGrpcClient, DefinitionGrpcClient>();
+            services.AddScoped<IVersionGrpcClient, VersionGrpcClient>();
 
             return services;
         }
