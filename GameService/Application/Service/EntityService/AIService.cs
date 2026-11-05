@@ -13,6 +13,12 @@ namespace Application.Service.EntityService
     public class AIService : ITickService
     {
         #region Attributes
+        // shortcut: same phase ranges for every creature, move them to AIDefinitionDTO when definitions need their own temperament
+        private const float IDLE_MIN_SECONDS = 1.5f;
+        private const float IDLE_MAX_SECONDS = 4f;
+        private const float WANDER_MIN_SECONDS = 1f;
+        private const float WANDER_MAX_SECONDS = 3f;
+
         private readonly WorldContext worldContext;
         private readonly CollisionService collisionService;
         #endregion
@@ -38,6 +44,9 @@ namespace Application.Service.EntityService
                 if (ai == null || !ai.IsAIControlled)
                     continue;
 
+                // Phase timer runs in real time, independent of how often the entity thinks
+                ai.StateTimer -= dt;
+
                 ai.ThinkCooldownRemaining -= dt;
                 if (ai.ThinkCooldownRemaining > 0)
                     continue;
@@ -46,8 +55,13 @@ namespace Application.Service.EntityService
 
                 // Remember where the entity first thought as its home, the leash anchors to it
                 var transform = entity.GetComponent<TransformInstance>();
-                if (transform != null)
-                    ai.HomePosition ??= new Vector2(transform.Position.X, transform.Position.Y);
+                if (transform != null && ai.HomePosition == null)
+                {
+                    ai.HomePosition = new Vector2(transform.Position.X, transform.Position.Y);
+
+                    // Random first idle, so a freshly spawned group doesn't start wandering together
+                    ai.StateTimer = RandomRange(0f, IDLE_MAX_SECONDS);
+                }
 
                 switch (ai.AIState)
                 {
@@ -112,8 +126,14 @@ namespace Application.Service.EntityService
                 return;
             }
 
-            // Stand still for one think, otherwise the last wander direction keeps walking forever
+            // Keep standing until the idle phase runs out
             transform.ClearMovementIntent();
+            if (ai.StateTimer > 0)
+                return;
+
+            // Start a wander phase in a fresh direction, heading home if outside the leash
+            transform.SetMovementIntent(PickWanderDirection(ai, transform));
+            ai.StateTimer = RandomRange(WANDER_MIN_SECONDS, WANDER_MAX_SECONDS);
             ai.AIState = AIState.Wander;
         }
 
@@ -134,15 +154,36 @@ namespace Application.Service.EntityService
                 return;
             }
 
-            // 2. If no player, wander, but walk back home once outside the leash
-            Vector2 direction = IsOutsideLeash(ai, movement)
-                ? Vector2.Normalize(ai.HomePosition! - movement.Position)
-                : Vector2.Normalize(new Vector2(Random.Shared.NextSingle() - 0.5f, Random.Shared.NextSingle() - 0.5f));
+            // 2. Crossed the leash mid-walk: turn toward home, keep the phase going
+            if (IsOutsideLeash(ai, movement))
+                movement.SetMovementIntent(Vector2.Normalize(ai.HomePosition! - movement.Position));
 
-            movement.SetMovementIntent(direction);
+            // 3. Keep walking the chosen direction until the wander phase runs out
+            if (ai.StateTimer > 0)
+                return;
 
-            // 3. Return to idle so it stops and looks around next tick, rather than getting stuck in Wander
+            // 4. Then stop and look around for a while
+            movement.ClearMovementIntent();
+            ai.StateTimer = RandomRange(IDLE_MIN_SECONDS, IDLE_MAX_SECONDS);
             ai.AIState = AIState.Idle;
+        }
+
+        private Vector2 PickWanderDirection(
+            AIInstance ai,
+            TransformInstance transform)
+        {
+            if (IsOutsideLeash(ai, transform))
+                return Vector2.Normalize(ai.HomePosition! - transform.Position);
+
+            float angle = Random.Shared.NextSingle() * MathF.Tau;
+            return new Vector2(MathF.Cos(angle), MathF.Sin(angle));
+        }
+
+        private static float RandomRange(
+            float min,
+            float max)
+        {
+            return min + Random.Shared.NextSingle() * (max - min);
         }
 
         private void TickChase(

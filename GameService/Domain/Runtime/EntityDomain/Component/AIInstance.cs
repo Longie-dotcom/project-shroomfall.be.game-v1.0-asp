@@ -20,6 +20,9 @@ namespace Domain.Runtime.EntityDomain.Component
         public float ThinkInterval { get; set; }
         public float AttackRange { get; private set; }
         public Vector2? HomePosition { get; set; }
+
+        // Time left in the current Idle or Wander phase
+        public float StateTimer { get; set; }
         #endregion
 
         public AIInstance(
@@ -35,7 +38,8 @@ namespace Domain.Runtime.EntityDomain.Component
             AggroRadius = aggroRadius;
             IsAIControlled = isAIControlled;
             ThinkInterval = thinkInterval;
-            ThinkCooldownRemaining = thinkInterval;
+            // Random first think, so entities spawned on the same tick don't think in lockstep
+            ThinkCooldownRemaining = thinkInterval * Random.Shared.NextSingle();
             EquippedItemDefinitionID = equippedItemDefinitionId;
             AttackRange = attackRange;
         }
