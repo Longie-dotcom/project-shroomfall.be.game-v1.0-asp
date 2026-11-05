@@ -7,6 +7,7 @@ using Application.System.Queue;
 using Contract;
 using Contract.Common;
 using Contract.DTO.Definition.MetaDomain;
+using Contract.Enum.EntityDomain;
 using Contract.Enum.MetaDomain.Effect;
 using Contract.Enum.MetaDomain.Item;
 using Domain.DomainException;
@@ -418,49 +419,39 @@ namespace Application.Service.MetaService
             Vector2 targetPos = targetVector;
 
             // 2. Calculate and normalize the projectile direction
+            //    (target on the caster's center would normalize to NaN, so fall back to the facing direction)
             Vector2 rawDir = targetPos - casterCenter;
-            Vector2 finalDirection = Vector2.Normalize(rawDir);
+            Vector2 finalDirection = rawDir.LengthSquared() > 0.0001f
+                ? Vector2.Normalize(rawDir)
+                : FacingToVector(transform.FacingDirection);
 
-            // 3. Dynamic Spawn Offset based on Caster's Collision Shape
-            float spawnOffsetDist = 0.5f; // Fallback distance
-
-            if (collision != null)
+            // 3. Spawn on the circle that encloses the caster's collision, so the start distance is the same in every direction
+            float spawnRadius = collision?.CollisionShape switch
             {
-                switch (collision.CollisionShape)
-                {
-                    case CircleShape circle:
-                        // Spawn just outside the circle's radius
-                        spawnOffsetDist = circle.Radius + 0.1f;
-                        break;
+                CircleShape circle => circle.Radius,
+                BoxShape box => MathF.Sqrt(box.Width * box.Width + box.Height * box.Height) / 2f, // half diagonal
+                PointShape => 0f,
+                _ => 0.4f // no collision: fallback body radius
+            };
 
-                    case BoxShape box:
-                        // Project direction vector onto the box edges to find the boundary distance
-                        float halfW = box.Width / 2f;
-                        float halfH = box.Height / 2f;
-
-                        float absDirX = MathF.Abs(finalDirection.X);
-                        float absDirY = MathF.Abs(finalDirection.Y);
-
-                        // Find intersection of direction ray with AABB boundary
-                        float safeDirX = MathF.Max(absDirX, 0.00001f);
-                        float safeDirY = MathF.Max(absDirY, 0.00001f);
-
-                        float distToXEdge = halfW / safeDirX;
-                        float distToYEdge = halfH / safeDirY;
-
-                        spawnOffsetDist = MathF.Min(distToXEdge, distToYEdge) + 0.1f; // Add a tiny 0.1 padding
-                        break;
-
-                    case PointShape:
-                        spawnOffsetDist = 0.1f; // Points have no volume, spawn almost instantly at center
-                        break;
-                }
-            }
+            float spawnOffsetDist = spawnRadius + 0.1f; // tiny padding so the projectile never starts inside the caster
 
             // 4. Calculate final Spawn Position
             Vector2 projectileSpawnPos = casterCenter + (finalDirection * spawnOffsetDist);
 
             return (projectileSpawnPos, finalDirection);
+        }
+
+        private static Vector2 FacingToVector(
+            EntityDirection direction)
+        {
+            return direction switch
+            {
+                EntityDirection.UP => new Vector2(0, 1),
+                EntityDirection.LEFT => new Vector2(-1, 0),
+                EntityDirection.RIGHT => new Vector2(1, 0),
+                _ => new Vector2(0, -1)
+            };
         }
 
         private void RemoveItemEffects(
