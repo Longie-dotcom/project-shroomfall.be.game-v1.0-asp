@@ -434,7 +434,7 @@ namespace Application.Service.MetaService
                 _ => 0.4f // no collision: fallback body radius
             };
 
-            float spawnOffsetDist = spawnRadius + 0.1f; // tiny padding so the projectile never starts inside the caster
+            float spawnOffsetDist = spawnRadius + 0.4f; // tiny padding so the projectile never starts inside the caster
 
             // 4. Calculate final Spawn Position
             Vector2 projectileSpawnPos = casterCenter + (finalDirection * spawnOffsetDist);
