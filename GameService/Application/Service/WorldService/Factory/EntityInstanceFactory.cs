@@ -207,6 +207,7 @@ namespace Application.Service.WorldService.Factory
                     ApplicationCode.EntityInstanceFactoryCode.InvalidItemContextType,
                     $"Expected InventoryEntityCreateContext for Item entity, but got {context.GetType().Name}.");
 
+            entity.AddComponent(definitionRuntimeFactory.CreateAppearance(entity.DefinitionID));
             entity.AddComponent(definitionRuntimeFactory.CreateWorldItemPayload(itemContext.Payload));
         }
         #endregion
