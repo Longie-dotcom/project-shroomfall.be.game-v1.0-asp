@@ -2,6 +2,8 @@
 using Application.Service.WorldService;
 using Application.System.Abstraction;
 using Application.System.Queue;
+using Contract;
+using Contract.Enum.MetaDomain.Effect;
 using Domain.Runtime.EntityDomain.Component;
 using Domain.Runtime.MetaDomain;
 
@@ -32,13 +34,6 @@ namespace Application.Service.MetaService
 
             var effect = effectContext.Effect;
 
-            // Instant
-            if (effect.Duration == 0)
-            {
-                characteristicService.ApplyEffectLogic(effectContext);
-                return;
-            }
-
             // Temporary
             if (effect.Duration > 0)
             {
@@ -46,7 +41,14 @@ namespace Application.Service.MetaService
                 return;
             }
 
-            // Permanent
+            // Instant: no duration on a vital (heal, damage, energy) is one-shot, never tracked
+            if (AttributeDefinitions.Get(effect.AttributeType).DomainType == DomainType.Vital)
+            {
+                characteristicService.ApplyEffectLogic(effectContext);
+                return;
+            }
+
+            // Permanent: no duration on a core (equipment) persists until removed
             ApplyPermanent(container, effectContext);
         }
 
