@@ -27,6 +27,7 @@ namespace Application.Service.WorldService.Creation
         private readonly EntityInstanceFactory entityInstanceFactory;
         private readonly RoomSpatialFactory roomSpatialFactory;
         private readonly ResidencyService residencyService;
+        private readonly EntitySpawnService entitySpawnService;
         #endregion
 
         #region Properties
@@ -37,7 +38,8 @@ namespace Application.Service.WorldService.Creation
             CollisionService collisionService,
             EntityInstanceFactory entityInstanceFactory,
             RoomSpatialFactory roomSpatialFactory,
-            ResidencyService residencyService)
+            ResidencyService residencyService,
+            EntitySpawnService entitySpawnService)
         {
             random = new Random();
             this.cacheProvider = cacheProvider;
@@ -45,6 +47,7 @@ namespace Application.Service.WorldService.Creation
             this.entityInstanceFactory = entityInstanceFactory;
             this.roomSpatialFactory = roomSpatialFactory;
             this.residencyService = residencyService;
+            this.entitySpawnService = entitySpawnService;
         }
 
         #region Methods
@@ -94,7 +97,7 @@ namespace Application.Service.WorldService.Creation
                 for (int i = 0; i < count; i++)
                 {
                     // Resolve the spawned position
-                    var (pos, layerZ) = ResolveSpawnPosition(roomDef, rule);
+                    var (pos, layerZ) = entitySpawnService.ResolveRulePosition(roomDef.Id, rule);
 
                     // Checking spawn type to create context
                     WorldEntityCreateContext context;
@@ -157,24 +160,6 @@ namespace Application.Service.WorldService.Creation
             }
 
             return ownerId;
-        }
-
-        private (Vector2 position, int layerZ) ResolveSpawnPosition(
-            RoomDefinitionDTO roomDef,
-            EntitySpawnRuleDTO rule)
-        {
-            // Pick a random coordinate within the rule's boundaries
-            int x = random.Next(rule.MinX, rule.MaxX + 1);
-            int y = random.Next(rule.MinY, rule.MaxY + 1);
-
-            // Get top spawn cell
-            var cell = cacheProvider.Room.GetTopCell(roomDef.Id, x, y);
-            if (cell == null)
-                throw new InternalException(
-                    ApplicationCode.InitializationServiceCode.NoSpawnCellFound,
-                    $"Coordinate resolution failed. No valid cell architecture found at grid location ({x}, {y}) inside Room Blueprint '{roomDef.Id}'.");
-
-            return (new Vector2(x, y), cell.Z);
         }
         #endregion
     }
