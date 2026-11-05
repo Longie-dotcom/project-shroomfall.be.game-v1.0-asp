@@ -1,4 +1,5 @@
-﻿using Contract.Enum.EntityDomain;
+﻿using Contract.Common;
+using Contract.Enum.EntityDomain;
 using Domain.Abstraction;
 
 namespace Domain.Runtime.EntityDomain.Component
@@ -13,12 +14,12 @@ namespace Domain.Runtime.EntityDomain.Component
         public string? TargetEntityId { get; set; }
         public bool IsAIControlled { get; set; } = true;
         public float ThinkCooldownRemaining { get; set; }
-        public float AttackTimer { get; set; }
         public float LeashDistance { get; set; } = 10.0f;
         public float AggroRadius { get; set; } = 5.0f;
         public string EquippedItemDefinitionID { get; private set; }
         public float ThinkInterval { get; set; }
         public float AttackRange { get; private set; }
+        public Vector2? HomePosition { get; set; }
         #endregion
 
         public AIInstance(

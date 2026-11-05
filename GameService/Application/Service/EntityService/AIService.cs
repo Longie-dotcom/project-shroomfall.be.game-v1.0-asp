@@ -44,12 +44,17 @@ namespace Application.Service.EntityService
 
                 ai.ThinkCooldownRemaining = ai.ThinkInterval;
 
+                // Remember where the entity first thought as its home, the leash anchors to it
+                var transform = entity.GetComponent<TransformInstance>();
+                if (transform != null)
+                    ai.HomePosition ??= new Vector2(transform.Position.X, transform.Position.Y);
+
                 switch (ai.AIState)
                 {
                     case AIState.Idle: TickIdle(entity, ai); break;
                     case AIState.Wander: TickWander(entity, ai); break;
                     case AIState.Chase: TickChase(entity, ai); break;
-                    case AIState.Attack: TickAttack(dt, entity, ai); break;
+                    case AIState.Attack: TickAttack(entity, ai); break;
                     default:
                         break;
                 }
@@ -82,6 +87,14 @@ namespace Application.Service.EntityService
             return false;
         }
 
+        private bool IsOutsideLeash(
+            AIInstance ai,
+            TransformInstance transform)
+        {
+            return ai.HomePosition != null
+                && Vector2.Distance(transform.Position, ai.HomePosition) > ai.LeashDistance;
+        }
+
         private void TickIdle(
             EntityInstance entity,
             AIInstance ai)
@@ -99,6 +112,8 @@ namespace Application.Service.EntityService
                 return;
             }
 
+            // Stand still for one think, otherwise the last wander direction keeps walking forever
+            transform.ClearMovementIntent();
             ai.AIState = AIState.Wander;
         }
 
@@ -119,11 +134,12 @@ namespace Application.Service.EntityService
                 return;
             }
 
-            // 2. If no player, wander
-            Vector2 randomDirection = Vector2.Normalize(
-                new Vector2(Random.Shared.NextSingle() - 0.5f, Random.Shared.NextSingle() - 0.5f));
+            // 2. If no player, wander, but walk back home once outside the leash
+            Vector2 direction = IsOutsideLeash(ai, movement)
+                ? Vector2.Normalize(ai.HomePosition! - movement.Position)
+                : Vector2.Normalize(new Vector2(Random.Shared.NextSingle() - 0.5f, Random.Shared.NextSingle() - 0.5f));
 
-            movement.SetMovementIntent(randomDirection);
+            movement.SetMovementIntent(direction);
 
             // 3. Return to idle so it stops and looks around next tick, rather than getting stuck in Wander
             ai.AIState = AIState.Idle;
@@ -145,13 +161,14 @@ namespace Application.Service.EntityService
             {
                 movement.ClearMovementIntent();
                 ai.TargetEntityId = null;
-                ai.AIState = AIState.Idle; // Changed to Idle instead of ReturnHome unless you have a specific ReturnHome state logic
+                ai.AIState = AIState.Idle;
                 return;
             }
 
             float distance = Vector2.Distance(movement.Position, targetTransform.Position);
 
-            if (distance > ai.LeashDistance)
+            // Give up when the target escapes, or when the chase dragged the entity too far from home
+            if (distance > ai.LeashDistance || IsOutsideLeash(ai, movement))
             {
                 ai.TargetEntityId = null;
                 ai.AIState = AIState.Idle; // Changed to Idle
@@ -172,7 +189,6 @@ namespace Application.Service.EntityService
         }
 
         private void TickAttack(
-            float dt,
             EntityInstance entity,
             AIInstance ai)
         {
@@ -202,47 +218,36 @@ namespace Application.Service.EntityService
             // 1. Stop moving when preparing/executing the attack
             transform.ClearMovementIntent();
 
-            ai.AttackTimer -= dt;
-            if (ai.AttackTimer > 0)
-            {
-                return;
-            }
-
-            // 2. Trigger the item action if the AI has an item equipped
-            if (!string.IsNullOrEmpty(ai.EquippedItemDefinitionID))
-            {
-                var actionState = entity.GetComponent<ActionInstance>();
-                var inventory = entity.GetComponent<InventoryInstance>();
-
-                if (actionState != null && inventory != null)
-                {
-                    var itemInstance = inventory.Items.FirstOrDefault(i => i.DefinitionID == ai.EquippedItemDefinitionID);
-
-                    if (itemInstance != null)
-                    {
-                        actionState.SetItemUseIntent(
-                            itemInstance.ID,
-                            targetTransform.Position,
-                            unequippedSlot: null,
-                            ItemUsageAction.Use
-                        );
-                    }
-                }
-            }
-
-            // 3. Reset attack cooldown based on stats
-            var characteristic = entity.GetComponent<CharacteristicInstance>();
-            float attackSpeed = characteristic?.GetCore(AttributeType.CooldownReduction) ?? 1f;
-            float interval = attackSpeed <= 0f ? 1f : 1f / attackSpeed;
-
-            ai.AttackTimer = interval;
-
-            // If target moved out of range, go back to chasing
+            // 2. Target left range: chase again right away (chase handles leash and escape)
             float currentDist = Vector2.Distance(transform.Position, targetTransform.Position);
             if (currentDist > ai.AttackRange)
             {
                 ai.AIState = AIState.Chase;
+                return;
             }
+
+            if (string.IsNullOrEmpty(ai.EquippedItemDefinitionID))
+                return;
+
+            var actionState = entity.GetComponent<ActionInstance>();
+            var inventory = entity.GetComponent<InventoryInstance>();
+            if (actionState == null || inventory == null)
+                return;
+
+            var itemInstance = inventory.Items.FirstOrDefault(i => i.DefinitionID == ai.EquippedItemDefinitionID);
+            if (itemInstance == null)
+                return;
+
+            // 3. The item cooldown in ItemService is the only attack timer, so fire the moment it allows
+            //    (an intent sent while on cooldown would be discarded by ItemService)
+            if (actionState.IsOnCooldown(itemInstance.ID))
+                return;
+
+            actionState.SetItemUseIntent(
+                itemInstance.ID,
+                targetTransform.Position,
+                unequippedSlot: null,
+                ItemUsageAction.Use);
         }
         #endregion
     }
