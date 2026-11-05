@@ -169,7 +169,7 @@ namespace Application.Service.WorldService.Creation
                         continue;
 
                     population.TryGetValue((room.ID, rule.EntityDefinitionID), out var alive);
-                    if (alive >= rule.MinCount)
+                    if (alive >= rule.MaxCount)
                         continue;
 
                     // One refill per rule per check, so the population trickles back instead of popping in at once

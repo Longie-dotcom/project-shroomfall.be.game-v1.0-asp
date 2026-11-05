@@ -3,7 +3,6 @@ using Application.System.Abstraction;
 using Application.System.Queue;
 using Contract.Common;
 using Contract.Enum.EntityDomain;
-using Contract.Enum.MetaDomain.Effect;
 using Contract.Enum.MetaDomain.Item;
 using Domain.Runtime.EntityDomain;
 using Domain.Runtime.EntityDomain.Component;
@@ -13,7 +12,6 @@ namespace Application.Service.EntityService
     public class AIService : ITickService
     {
         #region Attributes
-        // shortcut: same phase ranges for every creature, move them to AIDefinitionDTO when definitions need their own temperament
         private const float IDLE_MIN_SECONDS = 1.5f;
         private const float IDLE_MAX_SECONDS = 4f;
         private const float WANDER_MIN_SECONDS = 1f;
