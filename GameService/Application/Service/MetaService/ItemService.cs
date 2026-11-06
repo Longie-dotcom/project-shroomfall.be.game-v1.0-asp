@@ -162,6 +162,86 @@ namespace Application.Service.MetaService
         }
         #endregion
 
+        #region Crafting
+        public void Craft(
+            EntityInstance entity,
+            string itemDefinitionId)
+        {
+            var itemDef = cacheProvider.Item.Get(itemDefinitionId);
+            if (itemDef == null)
+                throw new NotFound(
+                    ApplicationCode.ItemServiceCode.CraftItemDefinitionNotFound,
+                    $"Item definition {itemDefinitionId} not found.");
+
+            if (itemDef.RequiredMaterials.Count == 0)
+                throw new BadRequest(
+                    ApplicationCode.ItemServiceCode.CraftItemNotCraftable,
+                    $"Item definition {itemDefinitionId} has no recipe.");
+
+            var transform = entity.GetComponent<TransformInstance>();
+            if (transform == null)
+                throw new InternalException(
+                    ApplicationCode.ItemServiceCode.CraftMissingTransform,
+                    $"Entity {entity.ID} missing TransformInstance when crafting.");
+
+            var inventory = entity.GetComponent<InventoryInstance>();
+            if (inventory == null)
+                throw new InternalException(
+                    ApplicationCode.ItemServiceCode.CraftMissingInventory,
+                    $"Entity {entity.ID} missing InventoryInstance when crafting.");
+
+            // 1. Validate every material first so nothing is consumed on a failed craft (equipped items don't count)
+            foreach (var material in itemDef.RequiredMaterials)
+            {
+                int owned = inventory.Items
+                    .Where(i => i.DefinitionID == material.MaterialItemDefinitionID && !i.IsEquipped())
+                    .Sum(i => i.Amount);
+
+                if (owned < material.Quantity)
+                    throw new BadRequest(
+                        ApplicationCode.ItemServiceCode.CraftNotEnoughMaterials,
+                        $"Entity {entity.ID} needs {material.Quantity} of {material.MaterialItemDefinitionID}, has {owned}.");
+            }
+
+            // 2. Consume materials, one unit at a time across stacks
+            foreach (var material in itemDef.RequiredMaterials)
+            {
+                int remaining = material.Quantity;
+                var stacks = inventory.Items
+                    .Where(i => i.DefinitionID == material.MaterialItemDefinitionID && !i.IsEquipped())
+                    .ToList();
+
+                foreach (var stack in stacks)
+                {
+                    while (remaining > 0 && stack.Amount > 0)
+                    {
+                        inventoryService.DeductItem(entity, stack);
+                        remaining--;
+                    }
+
+                    if (remaining == 0)
+                        break;
+                }
+            }
+
+            // 3. Drop the crafted item at the entity's position
+            var crafted = new ItemInstance(
+                Guid.NewGuid().ToString(),
+                itemDef.Id,
+                1,
+                ItemQuality.Low,
+                itemDef.MaxDurability);
+
+            entitySpawnService.Spawn(
+                new WorldItemCreateContext(
+                    Guid.NewGuid().ToString(),
+                    transform.RoomSpatialID,
+                    transform.LayerZ,
+                    transform.Position,
+                    crafted));
+        }
+        #endregion
+
         #region Core Pipeline
         /// <summary>
         /// Orchestrates the decoupled Manifestation and Cost logic.

@@ -42,6 +42,20 @@ namespace API.Controllers
         }
 
         [Authorize]
+        [HttpPost("craft-item")]
+        public async Task<IActionResult> CraftItem(
+            [FromBody] CraftItemDTO dto)
+        {
+            var (userId, googleId, role) = ClaimReader.GetIdentity(User);
+
+            await dispatcher.Send<CraftItemCommand>(
+                new CraftItemCommand(userId, dto)
+            );
+
+            return NoContent();
+        }
+
+        [Authorize]
         [HttpPost("enter-hub/{hubRoomSpatialId}")]
         public async Task<IActionResult> EnterHub(
             [FromRoute] string hubRoomSpatialId)
