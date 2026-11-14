@@ -56,6 +56,34 @@ namespace API.Controllers
         }
 
         [Authorize]
+        [HttpPost("buy-item")]
+        public async Task<IActionResult> BuyItem(
+            [FromBody] BuyItemDTO dto)
+        {
+            var (userId, googleId, role) = ClaimReader.GetIdentity(User);
+
+            await dispatcher.Send<BuyItemCommand>(
+                new BuyItemCommand(userId, dto)
+            );
+
+            return NoContent();
+        }
+
+        [Authorize]
+        [HttpPost("sell-item")]
+        public async Task<IActionResult> SellItem(
+            [FromBody] SellItemDTO dto)
+        {
+            var (userId, googleId, role) = ClaimReader.GetIdentity(User);
+
+            await dispatcher.Send<SellItemCommand>(
+                new SellItemCommand(userId, dto)
+            );
+
+            return NoContent();
+        }
+
+        [Authorize]
         [HttpPost("enter-hub/{hubRoomSpatialId}")]
         public async Task<IActionResult> EnterHub(
             [FromRoute] string hubRoomSpatialId)

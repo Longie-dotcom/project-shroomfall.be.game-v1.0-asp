@@ -46,9 +46,11 @@ namespace Application.Configuration
 
             // GAME FEATURE
             services.AddScoped<IHandler<BackHomeCommand, SaveGameDTO>, BackHomeHandler>();
+            services.AddScoped<IHandler<BuyItemCommand>, BuyItemHandler>();
             services.AddScoped<IHandler<CraftItemCommand>, CraftItemHandler>();
             services.AddScoped<IHandler<EnterHubCommand, SaveGameDTO>, EnterHubHandler>();
             services.AddScoped<IHandler<MoveCommand>, MoveHandler>();
+            services.AddScoped<IHandler<SellItemCommand>, SellItemHandler>();
             services.AddScoped<IHandler<UpdateAppearanceCommand>, UpdateAppearanceHandler>();
             services.AddScoped<IHandler<UseItemCommand>, UseItemHandler>();
             services.AddScoped<IHandler<UserRefreshCommand, DefinitionSnapshotDTO?>, UserRefreshHandler>();

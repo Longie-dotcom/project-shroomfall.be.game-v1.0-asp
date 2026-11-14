@@ -242,6 +242,101 @@ namespace Application.Service.MetaService
         }
         #endregion
 
+        #region Trading
+        public void Buy(
+            EntityInstance entity,
+            string itemDefinitionId)
+        {
+            var itemDef = GetTradableDefinition(itemDefinitionId);
+            var economic = GetEconomic(entity);
+
+            var transform = entity.GetComponent<TransformInstance>();
+            if (transform == null)
+                throw new InternalException(
+                    ApplicationCode.ItemServiceCode.BuyMissingTransform,
+                    $"Entity {entity.ID} missing TransformInstance when buying.");
+
+            if (!economic.TrySpendMoney(itemDef.TradingConfig!.Price))
+                throw new BadRequest(
+                    ApplicationCode.ItemServiceCode.BuyNotEnoughMoney,
+                    $"Entity {entity.ID} needs {itemDef.TradingConfig.Price}, has {economic.CurrentMoney}.");
+
+            // Drop the bought item at the entity's position, same as crafting
+            var bought = new ItemInstance(
+                Guid.NewGuid().ToString(),
+                itemDef.Id,
+                1,
+                ItemQuality.Low,
+                itemDef.MaxDurability);
+
+            entitySpawnService.Spawn(
+                new WorldItemCreateContext(
+                    Guid.NewGuid().ToString(),
+                    transform.RoomSpatialID,
+                    transform.LayerZ,
+                    transform.Position,
+                    bought));
+        }
+
+        /// <summary>
+        /// Sells one unit of the given inventory stack.
+        /// </summary>
+        public void Sell(
+            EntityInstance entity,
+            string itemInstanceId)
+        {
+            var inventory = entity.GetComponent<InventoryInstance>();
+            if (inventory == null)
+                throw new InternalException(
+                    ApplicationCode.ItemServiceCode.SellMissingInventory,
+                    $"Entity {entity.ID} missing InventoryInstance when selling.");
+
+            var item = inventory.Items.FirstOrDefault(i => i.ID == itemInstanceId);
+            if (item == null)
+                throw new NotFound(
+                    ApplicationCode.ItemServiceCode.SellItemNotFound,
+                    $"Entity {entity.ID} has no item {itemInstanceId}.");
+
+            if (item.IsEquipped())
+                throw new BadRequest(
+                    ApplicationCode.ItemServiceCode.SellItemEquipped,
+                    $"Item {itemInstanceId} is equipped and can't be sold.");
+
+            var itemDef = GetTradableDefinition(item.DefinitionID);
+            var economic = GetEconomic(entity);
+
+            inventoryService.DeductItem(entity, item);
+            // Floor so the player never gets more than the reduced price
+            economic.AddMoney((int)MathF.Floor(itemDef.TradingConfig!.Price * (1f - Constraint.SELL_PRICE_REDUCTION)));
+        }
+
+        private ItemDefinitionDTO GetTradableDefinition(
+            string itemDefinitionId)
+        {
+            var itemDef = cacheProvider.Item.Get(itemDefinitionId);
+            if (itemDef == null)
+                throw new NotFound(
+                    ApplicationCode.ItemServiceCode.TradeItemDefinitionNotFound,
+                    $"Item definition {itemDefinitionId} not found.");
+
+            if (itemDef.TradingConfig == null)
+                throw new BadRequest(
+                    ApplicationCode.ItemServiceCode.TradeItemNotTradable,
+                    $"Item definition {itemDefinitionId} has no trading config.");
+
+            return itemDef;
+        }
+
+        private static EconomicInstance GetEconomic(
+            EntityInstance entity)
+        {
+            return entity.GetComponent<EconomicInstance>()
+                ?? throw new InternalException(
+                    ApplicationCode.ItemServiceCode.TradeMissingEconomic,
+                    $"Entity {entity.ID} missing EconomicInstance when trading.");
+        }
+        #endregion
+
         #region Core Pipeline
         /// <summary>
         /// Orchestrates the decoupled Manifestation and Cost logic.
