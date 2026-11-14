@@ -80,6 +80,15 @@ namespace Infrastructure.Realtime
                 .SendAsync(NetworkMethod.OnInventoryCleared);
         }
 
+        public Task SendEconomicUpdated(
+            string connectionId,
+            EconomicUpdateDTO payload)
+        {
+            return gameHub.Clients
+                .Client(connectionId)
+                .SendAsync(NetworkMethod.OnEconomicUpdated, payload);
+        }
+
         // ─────────────────────────────
         // Spawn & Despawn (broadcast to room)
         // ─────────────────────────────

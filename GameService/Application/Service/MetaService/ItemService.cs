@@ -1,4 +1,6 @@
 ﻿using Application.Interface.Cache;
+using Application.Interface.Realtime.Events;
+using Application.Interface.Realtime.Events.Game;
 using Application.Service.EntityService;
 using Application.Service.WorldService;
 using Application.Service.WorldService.Creation;
@@ -50,6 +52,7 @@ namespace Application.Service.MetaService
         private readonly EffectService effectService;
         private readonly InventoryService inventoryService;
         private readonly CharacteristicService characteristicService;
+        private readonly IEventBus eventBus;
         #endregion
 
         #region Properties
@@ -61,8 +64,10 @@ namespace Application.Service.MetaService
             EntitySpawnService entitySpawnService,
             EffectService effectService,
             InventoryService inventoryService,
-            CharacteristicService characteristicService)
+            CharacteristicService characteristicService,
+            IEventBus eventBus)
         {
+            this.eventBus = eventBus;
             this.worldContext = worldContext;
             this.cacheProvider = cacheProvider;
             this.entitySpawnService = entitySpawnService;
@@ -261,6 +266,8 @@ namespace Application.Service.MetaService
                     ApplicationCode.ItemServiceCode.BuyNotEnoughMoney,
                     $"Entity {entity.ID} needs {itemDef.TradingConfig.Price}, has {economic.CurrentMoney}.");
 
+            eventBus.Publish(new EconomicUpdatedEvent(entity.ID, economic.CurrentMoney));
+
             // Drop the bought item at the entity's position, same as crafting
             var bought = new ItemInstance(
                 Guid.NewGuid().ToString(),
@@ -308,6 +315,7 @@ namespace Application.Service.MetaService
             inventoryService.DeductItem(entity, item);
             // Floor so the player never gets more than the reduced price
             economic.AddMoney((int)MathF.Floor(itemDef.TradingConfig!.Price * (1f - Constraint.SELL_PRICE_REDUCTION)));
+            eventBus.Publish(new EconomicUpdatedEvent(entity.ID, economic.CurrentMoney));
         }
 
         private ItemDefinitionDTO GetTradableDefinition(

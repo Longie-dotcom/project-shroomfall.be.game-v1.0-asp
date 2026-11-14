@@ -35,6 +35,10 @@ namespace Application.Interface.Realtime
         Task SendInventoryCleared(
             string connectionId);
 
+        Task SendEconomicUpdated(
+            string connectionId,
+            EconomicUpdateDTO payload);
+
         // ─────────────────────────────
         // Lifecycle (spawn / despawn)
         // ─────────────────────────────

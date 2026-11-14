@@ -37,6 +37,7 @@ namespace Infrastructure.Configuration
             services.AddSingleton<IEventHandler, DefinitionUpdatedHandler>();
 
             // GAME HANDLER
+            services.AddSingleton<IEventHandler, EconomicUpdatedHandler>();
             services.AddSingleton<IEventHandler, EntityActedHandler>();
             services.AddSingleton<IEventHandler, EntityAppearanceChangedHandler>();
             services.AddSingleton<IEventHandler, EntityLifecycleHandler>();
