@@ -6,6 +6,7 @@ using Application.Service.WorldService.Persistence;
 using Contract;
 using Domain.DomainException;
 using Domain.Runtime.EntityDomain;
+using Domain.Runtime.EntityDomain.Component;
 using ResponseCode;
 using System.Collections.Concurrent;
 
@@ -210,6 +211,9 @@ namespace Application.Service.WorldService
                     throw new InternalException(
                         ApplicationCode.ResidencyServiceCode.RoomInstanceNotFoundInPersistence,
                         $"Residency synchronization failed. Cold state Room '{roomSpatialId}' contains no archived record state inside instance persistence layer.");
+
+                // Players enter the world only via EnsurePlayerResident; a stale saved copy here would overwrite the live player by ID
+                roomInstance.Entities.RemoveAll(e => e.GetComponent<OwnershipInstance>() != null);
 
                 worldContext.Load(roomInstance);
                 node.State = RoomResidencyState.Warm;
