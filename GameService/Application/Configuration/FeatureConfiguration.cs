@@ -51,6 +51,7 @@ namespace Application.Configuration
             services.AddScoped<IHandler<EnterHubCommand, SaveGameDTO>, EnterHubHandler>();
             services.AddScoped<IHandler<MoveCommand>, MoveHandler>();
             services.AddScoped<IHandler<SellItemCommand>, SellItemHandler>();
+            services.AddScoped<IHandler<DropItemCommand>, DropItemHandler>();
             services.AddScoped<IHandler<UpdateAppearanceCommand>, UpdateAppearanceHandler>();
             services.AddScoped<IHandler<UseItemCommand>, UseItemHandler>();
             services.AddScoped<IHandler<UserRefreshCommand, DefinitionSnapshotDTO?>, UserRefreshHandler>();

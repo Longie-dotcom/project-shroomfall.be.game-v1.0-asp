@@ -35,6 +35,30 @@ namespace Application.Service.EntityService
         /// <returns>
         /// A list containing every item that was removed from the inventory.
         /// </returns>
+        public ItemInstance DropItem(
+            EntityInstance entity,
+            string itemInstanceId)
+        {
+            var inventory = entity.GetComponent<InventoryInstance>();
+            if (inventory == null)
+                throw new InternalException(
+                    ApplicationCode.InventoryServiceCode.DropSourceInventoryMissing,
+                    $"Source entity {entity.ID} does not possess an InventoryInstance component.");
+
+            var item = inventory.Items.FirstOrDefault(i => i.ID == itemInstanceId);
+            if (item == null)
+                throw new NotFound(
+                    ApplicationCode.InventoryServiceCode.DropItemNotFound,
+                    $"Entity {entity.ID} has no item {itemInstanceId}.");
+
+            if (item.IsEquipped())
+                throw new BadRequest(
+                    ApplicationCode.InventoryServiceCode.DropItemEquipped,
+                    $"Item {itemInstanceId} is equipped and can't be dropped.");
+
+            return RemoveItem(entity, item);
+        }
+
         public List<ItemInstance> DropAllItems(
             EntityInstance entity)
         {
