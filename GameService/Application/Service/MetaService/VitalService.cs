@@ -7,6 +7,7 @@ using Contract.DTO.Definition.EntityDomain.Component;
 using Contract.DTO.Definition.MetaDomain;
 using Contract.Enum.EntityDomain;
 using Contract.Enum.MetaDomain.Effect;
+using Domain.Runtime.EntityDomain;
 using Domain.Runtime.EntityDomain.Component;
 using Domain.Runtime.MetaDomain;
 
@@ -262,6 +263,36 @@ namespace Application.Service.MetaService
                     Reason = VitalChangeReason.EnergyRestore
                 },
                 null);
+        }
+        #endregion
+
+        #region Respawn
+        /// <summary>
+        /// Sets a vital to a fraction of its scaled max value and notifies the room.
+        /// </summary>
+        public void RestoreVitalByRate(
+            EntityInstance entity,
+            AttributeType type,
+            float rate)
+        {
+            var characteristic = entity.GetComponent<CharacteristicInstance>();
+            if (characteristic == null) return;
+
+            var attribute = GetScaledAttribute(characteristic, type);
+            if (attribute == null) return;
+
+            var (config, _, maxValue) = attribute.Value;
+            float current = Math.Clamp(maxValue * rate, config.Min, maxValue);
+            characteristic.SetVital(type, current);
+
+            var transform = entity.GetComponent<TransformInstance>();
+            if (transform != null)
+                eventBus.Publish(new EntityVitalChangedEvent(
+                    entity.ID,
+                    transform.RoomSpatialID,
+                    type,
+                    current,
+                    VitalChangeReason.Heal));
         }
         #endregion
 

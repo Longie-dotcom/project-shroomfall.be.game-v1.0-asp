@@ -45,6 +45,7 @@ namespace Infrastructure.Configuration
             services.AddSingleton<IEventHandler, InventoryClearedHandler>();
             services.AddSingleton<IEventHandler, InventoryItemChangedHandler>();
             services.AddSingleton<IEventHandler, PlayerCharacteristicSyncHandler>();
+            services.AddSingleton<IEventHandler, PlayerDiedHandler>();
 
             // EVENT BUS
             services.AddSingleton<IEventBus, EventBus>();

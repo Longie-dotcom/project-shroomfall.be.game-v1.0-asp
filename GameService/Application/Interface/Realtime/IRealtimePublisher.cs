@@ -1,4 +1,5 @@
 ﻿using Contract.DTO.Feature.Admin.Response;
+using Contract.DTO.Feature.Connection.Response;
 using Contract.DTO.Feature.Design.Response;
 using Contract.DTO.Feature.Game.Response;
 using Contract.DTO.Runtime.EntityDomain.Component;
@@ -38,6 +39,10 @@ namespace Application.Interface.Realtime
         Task SendEconomicUpdated(
             string connectionId,
             EconomicUpdateDTO payload);
+
+        Task SendPlayerRespawned(
+            string connectionId,
+            SaveGameDTO payload);
 
         // ─────────────────────────────
         // Lifecycle (spawn / despawn)

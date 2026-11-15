@@ -53,6 +53,35 @@ namespace Application.Service.EntityService
         }
 
         /// <summary>
+        /// Removes up to <paramref name="count"/> random unequipped item stacks from the entity's inventory
+        /// and returns them for the caller to spawn as world items.
+        /// </summary>
+        public List<ItemInstance> DropRandomItems(
+            EntityInstance entity,
+            int count)
+        {
+            var sourceInventory = entity.GetComponent<InventoryInstance>();
+            if (sourceInventory == null)
+                throw new InternalException(
+                    ApplicationCode.InventoryServiceCode.DropSourceInventoryMissing,
+                    $"Source entity {entity.ID} does not possess an InventoryInstance component.");
+
+            var drops = sourceInventory.Items
+                .Where(i => !i.IsEquipped())
+                .OrderBy(_ => Random.Shared.Next())
+                .Take(count)
+                .ToList();
+
+            foreach (var item in drops)
+            {
+                sourceInventory.Items.Remove(item);
+                eventBus.Publish(new InventoryItemChangedEvent(entity.ID, item, ItemInventorySyncEvent.Removed));
+            }
+
+            return drops;
+        }
+
+        /// <summary>
         /// Attempts to transfer a world item payload into an entity's inventory,
         /// respecting stack limits and inventory slot capacity.
         /// The payload instance is updated in-place to reflect any remaining amount.

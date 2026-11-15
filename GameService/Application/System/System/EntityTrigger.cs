@@ -20,6 +20,7 @@ namespace Application.System.System
         private readonly TriggeredEffectService triggeredEffectService;
         private readonly EntitySpawnService entitySpawnService;
         private readonly InventoryService inventoryService;
+        private readonly DeathService deathService;
         #endregion
 
         public EntityTrigger(
@@ -29,8 +30,10 @@ namespace Application.System.System
             ProjectileService projectileService,
             TriggeredEffectService triggeredEffectService,
             EntitySpawnService entitySpawnService,
-            InventoryService inventoryService)
+            InventoryService inventoryService,
+            DeathService deathService)
         {
+            this.deathService = deathService;
             this.worldContext = worldContext;
             this.eventBus = eventBus;
             this.itemService = itemService;
@@ -177,8 +180,10 @@ namespace Application.System.System
                     break;
 
                 case DeathOutcome.Player:
-                    // TODO: Return the player to the their private room and lost their 80% money + 4 random items
-                    break; 
+                    var player = worldContext.GetEntity(result.EntityInstanceID);
+                    if (player != null)
+                        deathService.ApplyPlayerDeath(player);
+                    break;
 
                 case DeathOutcome.None:
                 default:

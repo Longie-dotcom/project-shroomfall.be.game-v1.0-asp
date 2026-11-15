@@ -1,6 +1,7 @@
 ﻿using Application.Interface.Realtime;
 using Contract;
 using Contract.DTO.Feature.Admin.Response;
+using Contract.DTO.Feature.Connection.Response;
 using Contract.DTO.Feature.Design.Response;
 using Contract.DTO.Feature.Game.Response;
 using Contract.DTO.Runtime.EntityDomain.Component;
@@ -87,6 +88,15 @@ namespace Infrastructure.Realtime
             return gameHub.Clients
                 .Client(connectionId)
                 .SendAsync(NetworkMethod.OnEconomicUpdated, payload);
+        }
+
+        public Task SendPlayerRespawned(
+            string connectionId,
+            SaveGameDTO payload)
+        {
+            return gameHub.Clients
+                .Client(connectionId)
+                .SendAsync(NetworkMethod.OnPlayerRespawned, payload);
         }
 
         // ─────────────────────────────
