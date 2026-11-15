@@ -4,6 +4,8 @@ using Application.Interface.Realtime.Managers;
 using Application.Service.EntityService;
 using Application.Service.WorldService;
 using Application.Service.WorldService.Creation;
+using Contract;
+using Contract.Common;
 using Domain.DomainException;
 using Domain.Runtime.EntityDomain.Component;
 using ResponseCode;
@@ -60,15 +62,20 @@ namespace Application.Feature.Game.Handler
                     ApplicationCode.GameHandlerCode.DropItemTransformMissing,
                     $"Player {player.ID} has no TransformInstance when dropping.");
 
-            // Remove from inventory, then spawn as a world item at the player's feet
+            // Remove from inventory, then spawn as a world item in a random direction around the player
             var item = inventoryService.DropItem(player, dto.ItemInstanceID);
+
+            float angle = Random.Shared.NextSingle() * MathF.Tau;
+            var dropPosition = new Vector2(
+                transform.Position.X + MathF.Cos(angle) * Constraint.DROP_ITEM_OFFSET,
+                transform.Position.Y + MathF.Sin(angle) * Constraint.DROP_ITEM_OFFSET);
 
             entitySpawnService.Spawn(
                 new WorldItemCreateContext(
                     Guid.NewGuid().ToString(),
                     transform.RoomSpatialID,
                     transform.LayerZ,
-                    transform.Position,
+                    dropPosition,
                     item));
 
             return Task.CompletedTask;
