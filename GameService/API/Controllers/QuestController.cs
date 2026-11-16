@@ -43,7 +43,7 @@ namespace API.Controllers
         }
 
         [Authorize]
-        [HttpPost]
+        [HttpPost("accept")]
         public async Task<ActionResult<QuestInstanceDTO>> AcceptQuest(
             [FromBody] string questInstanceId)
         {
@@ -57,7 +57,7 @@ namespace API.Controllers
         }
 
         [Authorize(Roles = nameof(Role.GameMaster))]
-        [HttpPost]
+        [HttpPost("create")]
         public async Task<IActionResult> CreateQuest(
             [FromBody] QuestInstanceDTO dto)
         {
@@ -71,7 +71,7 @@ namespace API.Controllers
         }
 
         [Authorize]
-        [HttpPost]
+        [HttpPost("submit")]
         public async Task<IActionResult> SubmitQuestResult(
             [FromBody] SubmitQuestResultDTO dto)
         {
@@ -85,7 +85,7 @@ namespace API.Controllers
         }
 
         [Authorize]
-        [HttpPost]
+        [HttpPost("gacha")]
         public async Task<IActionResult> GachaReward(
             [FromBody] string questInstanceId)
         {
