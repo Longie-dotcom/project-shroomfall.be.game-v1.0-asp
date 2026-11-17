@@ -46,6 +46,7 @@ namespace Infrastructure.Configuration
             services.AddSingleton<IEventHandler, InventoryItemChangedHandler>();
             services.AddSingleton<IEventHandler, PlayerCharacteristicSyncHandler>();
             services.AddSingleton<IEventHandler, PlayerDiedHandler>();
+            services.AddSingleton<IEventHandler, QuestProgressUpdatedHandler>();
 
             // EVENT BUS
             services.AddSingleton<IEventBus, EventBus>();

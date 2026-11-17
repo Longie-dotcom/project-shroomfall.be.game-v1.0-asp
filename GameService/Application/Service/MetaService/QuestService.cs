@@ -1,4 +1,6 @@
-﻿using Contract;
+﻿using Application.Interface.Realtime.Events;
+using Application.Interface.Realtime.Events.Game;
+using Contract;
 using Contract.DTO.Feature.Quest.Command;
 using Contract.DTO.Runtime.MetaDomain;
 using Contract.Enum.EntityDomain;
@@ -12,15 +14,18 @@ namespace Application.Service.MetaService
         #region Attributes
         private readonly Dictionary<string, QuestInstanceDTO> quests = new();
         private readonly GachaService gachaService;
+        private readonly IEventBus eventBus;
         #endregion
 
         #region Properties
         #endregion
 
         public QuestService(
-            GachaService gachaService)
+            GachaService gachaService,
+            IEventBus eventBus)
         {
             this.gachaService = gachaService;
+            this.eventBus = eventBus;
         }
 
         #region Methods
@@ -76,7 +81,7 @@ namespace Application.Service.MetaService
 
             // Update expired quests before checking the active quest limit.
             var now = DateTime.UtcNow;
-            UpdateExpiredQuests(questProgress, now);
+            UpdateExpiredQuests(player, questProgress, now);
 
             // Retrieve quest definition.
             var quest = GetQuest(questInstanceId);
@@ -116,6 +121,7 @@ namespace Application.Service.MetaService
                 QuestProgressStatus.InProgress,
                 identificationProgress));
 
+            PublishQuestProgressUpdated(player, questProgress);
             return quest;
         }
 
@@ -140,7 +146,11 @@ namespace Application.Service.MetaService
                 return false;
 
             // Consume the claim only after successful granting.
-            return entry.TryUpdateStatus(QuestProgressStatus.Rewarded);
+            if (!entry.TryUpdateStatus(QuestProgressStatus.Rewarded))
+                return false;
+
+            PublishQuestProgressUpdated(player, questProgress);
+            return true;
         }
 
         public bool TrySubmitQuestResult(
@@ -153,7 +163,7 @@ namespace Application.Service.MetaService
                 return false;
 
             // Lazy update
-            UpdateExpiredQuests(questProgress, DateTime.UtcNow);
+            UpdateExpiredQuests(player, questProgress, DateTime.UtcNow);
 
             // Allow in progress quest only
             var entry = questProgress.Entries.FirstOrDefault(x => x.QuestInstanceId == questInstanceId);
@@ -174,7 +184,11 @@ namespace Application.Service.MetaService
                 return false;
 
             var targetStatus = isCompleted ? QuestProgressStatus.Completed : QuestProgressStatus.Failed;
-            return entry.TryUpdateStatus(targetStatus);
+            if (!entry.TryUpdateStatus(targetStatus))
+                return false;
+
+            PublishQuestProgressUpdated(player, questProgress);
+            return true;
         }
 
         public void HandleEntityDefeated(
@@ -186,8 +200,9 @@ namespace Application.Service.MetaService
                 return;
 
             // Lazy update
-            UpdateExpiredQuests(questProgress, DateTime.UtcNow);
+            UpdateExpiredQuests(source, questProgress, DateTime.UtcNow);
 
+            var changed = false;
             foreach (var entry in questProgress.Entries)
             {
                 // Allow in progress identification quest only
@@ -207,13 +222,19 @@ namespace Application.Service.MetaService
                 // Increase progress
                 if (identificationProgress.IncreaseProgressAndCheckCompletion(1))
                     entry.TryUpdateStatus(QuestProgressStatus.Completed);
+                changed = true;
             }
+
+            if (changed)
+                PublishQuestProgressUpdated(source, questProgress);
         }
 
         private void UpdateExpiredQuests(
+            EntityInstance player,
             QuestProgressInstance questProgress,
             DateTime now)
         {
+            var changed = false;
             foreach (var entry in questProgress.Entries)
             {
                 if (entry.Status != QuestProgressStatus.InProgress)
@@ -223,8 +244,18 @@ namespace Application.Service.MetaService
                 if (quest == null || quest.ExpiredAt > now)
                     continue;
 
-                entry.TryUpdateStatus(QuestProgressStatus.Failed);
+                changed |= entry.TryUpdateStatus(QuestProgressStatus.Failed);
             }
+
+            if (changed)
+                PublishQuestProgressUpdated(player, questProgress);
+        }
+
+        private void PublishQuestProgressUpdated(
+            EntityInstance player,
+            QuestProgressInstance questProgress)
+        {
+            eventBus.Publish(new QuestProgressUpdatedEvent(player.ID, questProgress));
         }
         #endregion
     }

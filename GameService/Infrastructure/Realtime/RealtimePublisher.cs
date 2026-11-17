@@ -99,6 +99,15 @@ namespace Infrastructure.Realtime
                 .SendAsync(NetworkMethod.OnPlayerRespawned, payload);
         }
 
+        public Task SendQuestProgressUpdated(
+            string connectionId,
+            QuestProgressInstanceDTO payload)
+        {
+            return gameHub.Clients
+                .Client(connectionId)
+                .SendAsync(NetworkMethod.OnQuestProgressUpdated, payload);
+        }
+
         // ─────────────────────────────
         // Spawn & Despawn (broadcast to room)
         // ─────────────────────────────

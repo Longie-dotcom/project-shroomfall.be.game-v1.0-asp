@@ -44,6 +44,10 @@ namespace Application.Interface.Realtime
             string connectionId,
             SaveGameDTO payload);
 
+        Task SendQuestProgressUpdated(
+            string connectionId,
+            QuestProgressInstanceDTO payload);
+
         // ─────────────────────────────
         // Lifecycle (spawn / despawn)
         // ─────────────────────────────

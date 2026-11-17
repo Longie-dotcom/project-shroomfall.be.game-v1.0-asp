@@ -1,5 +1,4 @@
-﻿using Contract;
-using Contract.Enum.EntityDomain;
+﻿using Contract.Enum.EntityDomain;
 using Domain.Abstraction;
 
 namespace Domain.Runtime.EntityDomain.Component
