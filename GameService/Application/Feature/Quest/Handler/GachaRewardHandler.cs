@@ -3,14 +3,17 @@ using Application.Feature.Quest.Command;
 using Application.Interface.Realtime.Managers;
 using Application.Service.MetaService;
 using Application.Service.WorldService;
+using AutoMapper;
+using Contract.DTO.Runtime.MetaDomain;
 using Domain.DomainException;
 using ResponseCode;
 
 namespace Application.Feature.Quest.Handler
 {
-    public class GachaRewardHandler : IHandler<GachaRewardCommand>
+    public class GachaRewardHandler : IHandler<GachaRewardCommand, ItemInstanceDTO>
     {
         #region Attributes
+        private readonly IMapper mapper;
         private readonly QuestService questService;
         private readonly ISessionManager sessionManager;
         private readonly WorldContext worldContext;
@@ -20,17 +23,19 @@ namespace Application.Feature.Quest.Handler
         #endregion
 
         public GachaRewardHandler(
+            IMapper mapper,
             QuestService questService,
             ISessionManager sessionManager,
             WorldContext worldContext)
         {
+            this.mapper = mapper;
             this.questService = questService;
             this.sessionManager = sessionManager;
             this.worldContext = worldContext;
         }
 
         #region Methods
-        public async Task Handle(
+        public async Task<ItemInstanceDTO> Handle(
             GachaRewardCommand command)
         {
             // Validate ownership
@@ -48,10 +53,12 @@ namespace Application.Feature.Quest.Handler
                     $"Player instance is not found with User ID: {command.UserID} - instance ID: {playerInstanceId}");
 
             // Claim quest reward
-            if(!questService.TryClaimQuestReward(playerInstance, command.QuestInstanceID))
+            if(!questService.TryClaimQuestReward(playerInstance, command.QuestInstanceID, out var reward))
                 throw new InternalException(
                     ApplicationCode.QuestHandlerCode.CanNotReceiveReward,
                     $"Player with User ID: {command.UserID} - instance ID: {playerInstanceId} can not receive reward");
+
+            return await Task.FromResult(mapper.Map<ItemInstanceDTO>(reward));
         }
         #endregion
     }

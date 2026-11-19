@@ -6,6 +6,7 @@ using Contract.DTO.Runtime.MetaDomain;
 using Contract.Enum.EntityDomain;
 using Domain.Runtime.EntityDomain;
 using Domain.Runtime.EntityDomain.Component;
+using Domain.Runtime.MetaDomain;
 
 namespace Application.Service.MetaService
 {
@@ -127,8 +128,11 @@ namespace Application.Service.MetaService
 
         public bool TryClaimQuestReward(
             EntityInstance player,
-            string questInstanceId)
+            string questInstanceId,
+            out ItemInstance? reward)
         {
+            reward = null;
+
             var questProgress = player.GetComponent<QuestProgressInstance>();
             if (questProgress == null)
                 return false;
@@ -142,7 +146,7 @@ namespace Application.Service.MetaService
                 return false;
 
             // Roll the gacha and grant its reward.
-            if (!gachaService.TryGrantGachaReward(player, quest.QuestRewardConfig))
+            if (!gachaService.TryGrantGachaReward(player, quest.QuestRewardConfig, out reward))
                 return false;
 
             // Consume the claim only after successful granting.

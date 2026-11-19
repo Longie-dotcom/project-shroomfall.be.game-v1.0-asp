@@ -29,8 +29,11 @@ namespace Application.Service.MetaService
         #region Methods
         public bool TryGrantGachaReward(
             EntityInstance player,
-            QuestRewardConfig config)
+            QuestRewardConfig config,
+            out ItemInstance? reward)
         {
+            reward = null;
+
             if (config == null || config.Entries == null || config.Entries.Count == 0)
                 return false;
 
@@ -94,6 +97,7 @@ namespace Application.Service.MetaService
                     transform.Position,
                     item));
 
+            reward = item;
             return true;
         }
         #endregion

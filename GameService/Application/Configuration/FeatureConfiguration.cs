@@ -59,7 +59,7 @@ namespace Application.Configuration
             // QUEST FEATURE
             services.AddScoped<IHandler<AcceptQuestCommand, QuestInstanceDTO>, AcceptQuestHandler>();
             services.AddScoped<IHandler<CreateQuestCommand>, CreateQuestHandler>();
-            services.AddScoped<IHandler<GachaRewardCommand>, GachaRewardHandler>();
+            services.AddScoped<IHandler<GachaRewardCommand, ItemInstanceDTO>, GachaRewardHandler>();
             services.AddScoped<IHandler<QueryQuestsCommand, PagedResponseDTO<QuestInstanceDTO>>, QueryQuestsHandler>();
             services.AddScoped<IHandler<SubmitQuestResultCommand>, SubmitQuestResultHandler>();
 

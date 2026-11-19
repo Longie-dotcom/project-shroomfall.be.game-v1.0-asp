@@ -86,16 +86,16 @@ namespace API.Controllers
 
         [Authorize]
         [HttpPost("gacha")]
-        public async Task<IActionResult> GachaReward(
+        public async Task<ActionResult<ItemInstanceDTO>> GachaReward(
             [FromBody] string questInstanceId)
         {
             var (userId, googleId, role) = ClaimReader.GetIdentity(User);
 
-            await dispatcher.Send<GachaRewardCommand>(
+            var result = await dispatcher.Send<GachaRewardCommand, ItemInstanceDTO>(
                 new GachaRewardCommand(userId, questInstanceId)
             );
 
-            return Ok();
+            return Ok(result);
         }
         #endregion
     }
