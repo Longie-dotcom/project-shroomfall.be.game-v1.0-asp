@@ -149,6 +149,15 @@ namespace Application.Service.MetaService
             if (!gachaService.TryGrantGachaReward(player, quest.QuestRewardConfig, out reward))
                 return false;
 
+            // Grant the quest's flat currency reward
+            var economic = player.GetComponent<EconomicInstance>();
+            int currency = quest.QuestRewardConfig.CurrencyAmount;
+            if (economic != null && currency > 0)
+            {
+                economic.AddMoney(currency);
+                eventBus.Publish(new EconomicUpdatedEvent(player.ID, economic.CurrentMoney));
+            }
+
             // Consume the claim only after successful granting.
             if (!entry.TryUpdateStatus(QuestProgressStatus.Rewarded))
                 return false;
